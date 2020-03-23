@@ -193,11 +193,10 @@
                                    if(event.status && result != null) 
                                     {
                                         if(result != ''){
-                                        
-                                           // var resultdata = result.replace(/\\/g,'');
-                                            var mileageList = JSON.parse(result[0]);
-                                            $scope.totalMileage = JSON.parse(result[1]);
-                                            $scope.totalVariableAmount = JSON.parse(result[2]);
+                                            var resultdata = result.replace(/\\/g,'');
+                                            var mileageList = JSON.parse(resultdata[0]);
+                                            $scope.totalMileage = JSON.parse(resultdata[1]);
+                                            $scope.totalVariableAmount = JSON.parse(resultdata[2]);
                                             $scope.exportReimList = [];
                                             $scope.exportReimList.push(["Contact Email", "Day Of Week","Trip Date","Start Time","End Time","Trip Origin","Trip Destination","Mileage","Tracing Style","Status","Date Submitted","Date Approved","Maint/Tires","Fuel Rate","Variable Rate","Variable Amount","Notes"]);
                                             angular.forEach(mileageList, function (item, key) {
@@ -1064,7 +1063,7 @@
           <!-- Upload Insurance button Model Ends -->
         <section class="container-fluid">
             <div class="font-s my-3">
-                <h1 class="form-heading mb-30">{{contactname}</h1>
+                <h1 class="form-heading mb-30">{{contactname}}</h1>
             </div>
             <div class="form-divider"></div>
             <div class="row">

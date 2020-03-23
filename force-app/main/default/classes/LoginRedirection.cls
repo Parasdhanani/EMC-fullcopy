@@ -10,7 +10,7 @@ public with sharing class LoginRedirection
     {
         User u = new User();
 
-        u = [select id,Profile.Name,contactid,contact.showTeamRecord__c,contact.Accountid,Contact.Insurance_Attachment_Id__c from user where id=:userinfo.getuserid()];
+        u = [select id,Profile.Name,contactid,contact.showTeamRecord__c,contact.Accountid from user where id=:userinfo.getuserid()];
         
         
         if(u!=null)
@@ -27,14 +27,7 @@ public with sharing class LoginRedirection
             }
             else if(u.Profile.Name == 'Customer Community Login User - Driver')
             {
-                //AI-000414
-                PageReference pageRef;
-                if(u.Contact.Insurance_Attachment_Id__c != null ){
-                    pageRef = new PageReference('/app/driverDashboardClone?accid='+u.contact.Accountid+'&id='+u.contactid);
-                }
-                else{
-                    pageRef = new PageReference('/app/driverDashboardInsuranceClone?accid='+u.contact.Accountid+'&id='+u.contactid);
-                }
+                PageReference pageRef = new PageReference('/app/driverDashboardClone?accid='+u.contact.Accountid+'&id='+u.contactid);
                 return pageRef;
             }
             else if(u.Profile.Name == 'Customer Community Login User - Manager/Driver')

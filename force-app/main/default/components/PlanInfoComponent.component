@@ -409,6 +409,7 @@
                                         <span data-year="Sent" data-info=""></span>
                                     </div>
                                     <div class="plan-info-input" id="completedsignature">
+                                        <div class="input-ring"></div>
                                         <span data-year="Completed" data-info=""></span>
                                     </div>
                                     <div class="plan-info-input" id="didnotattendsignature">

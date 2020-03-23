@@ -27,7 +27,7 @@ public class UpdateTripIdController {
     {
         contactMap = new Map<String,Contact>();
         List<Contact> conList = new List<Contact>();
-        for(Contact currentContact : [Select id,Name,Firstname,Triplog_UserID__c,External_Email__c,Deactivated_Date__c From Contact Where Account.id =: accId and (Role__c = 'Driver' or Role__c = 'Driver/Manager'or Role__c =: StaticValues.roleAdminDriver )])
+        for(Contact currentContact : [Select id,Name,Triplog_UserID__c,External_Email__c,Deactivated_Date__c From Contact Where Account.id =: accId and (Role__c = 'Driver' or Role__c = 'Driver/Manager'or Role__c =: StaticValues.roleAdminDriver )])
         {
             contactMap.put(currentContact.External_Email__c.toLowerCase(),currentContact);
         }

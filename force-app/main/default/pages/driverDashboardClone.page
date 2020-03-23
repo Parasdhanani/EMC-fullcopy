@@ -1254,7 +1254,6 @@
                         }
 
                         $scope.complianceCalculation = function() {
-                            debugger
                             $('#spinner').show();
                             $scope.detailreportfordownload = [];
                             $scope.summaryreportfordownload = [];
@@ -1264,7 +1263,6 @@
                             Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.DriverDashboardController.getCompliance}',$scope.id,
                                 function(result, event) {
                                     if(event.status && result != null) {
-                                        debugger
                                           $scope.messageofcompliance = JSON.parse(result[1]);
                                         if (result.length > 2) {
                                             $scope.$apply(function () {
@@ -1415,7 +1413,6 @@
                     </div>
                 </div>
             </div>
-          
             <section class="container-fluid">
                 <div class="back-btn my-3">
                     <h1 class="form-heading mb-30">{{contactname}}</h1>
@@ -1550,7 +1547,7 @@
                                                             <td ng-click="openmodal(ml.month)"><a>{{ml.month}}</a></td>
                                                             <td ng-if="ml.fuel != null && ml.fuel != ''">${{ml.fuel}}</td>
                                                             <td ng-if="ml.fuel == null || ml.fuel == ''"></td>
-                                                            <td>{{ml.mileage|currency:value=""}}</td><!--AI-000212-->
+                                                            <td>{{ml.mileage|currency:value=""}}</td><!--AI-000212 -->
                                                             <td>{{ml.varibleAndFixedReimbursements}}</td>
                                                             <td>${{ml.totalReimbursements|currency:value=""}}</td>
                                                         </tr>
@@ -1571,7 +1568,7 @@
                     </div>
                 </div>
             </section>
-          
+            
             <reimbursements-dialog-directive model="reimbursementDialog" export-data="exportManagerList"></reimbursements-dialog-directive>
            
             <!-- The Import file Modal -->

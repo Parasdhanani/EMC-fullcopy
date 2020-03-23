@@ -10,7 +10,7 @@ public class DriverDashboardController
     public static String totalvariableamount{get;set;}
     public static String contactDataAsString {get; set;}
     public static String gaspriceforpreviosmonth {get; set;}
-    public String accInsuranceList {get; set;}
+   
     public static String currentDriverDetails {get;set;}
     public List<Attachment> driverInsuranceAttachmentList {get;set;}
     public List<Attachment> driverPacketAttachmentList {get;set;}
@@ -45,14 +45,6 @@ public class DriverDashboardController
         insuranceSize = driverInsuranceAttachmentList.size();
         driverPacketAttachmentList = [select id,Body,Name from Attachment where ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%Driver_Packet%' limit 1];
         packetSize = driverPacketAttachmentList.size();
-
-        accInsuranceList = '[]';
-        //AI-000414
-        if(getContactid()!=''&& getAccountid()!='')
-        {
-            List<Account> accInsurances = [SELECT id,Bodily_Injury__c, Uninsured_Motorist__c, Property_Damage__c, Comprehensive__c, Collision__c FROM account WHERE Id =: getAccountid()];
-           accInsuranceList = String.escapeSingleQuotes( JSON.serialize(accInsurances));
-        }
     }
     public static String getAccountid()
     {

@@ -454,14 +454,12 @@ public with sharing class WrapperUtils
            DateTime startTime = employeeMileage.StartTime__c;
            currentEmployeeMileage.starttime=startTime.formatGMT('h:mm a');
         }
-        
         if(employeeMileage.EndTime__c != null)
         {
            //currentEmployeeMileage.endtime=employeeMileage.EndTime__c;
            DateTime endTime = employeeMileage.EndTime__c;
            currentEmployeeMileage.endtime=endTime.formatGMT('h:mm a');
         }
-        
         if(employeeMileage.Day_Of_Week__c != null)
         {
             currentEmployeeMileage.dayofweek=employeeMileage.Day_Of_Week__c;
@@ -669,9 +667,8 @@ public with sharing class WrapperUtils
         employeeReimbursement.variableRate  = String.valueOf(currentEmployeeReimbursement.Total_Variable_Rate__c);
         employeeReimbursement.month  = getMonthName(currentEmployeeReimbursement.Month__c);
         employeeReimbursement.intmonth  = getMonthInteger(currentEmployeeReimbursement.Month__c);
-        employeeReimbursement.fuel  = String.valueOf(currentEmployeeReimbursement.Fuel_Price__c);
-        employeeReimbursement.mileage  = String.valueOf(currentEmployeeReimbursement.Total_Mileage__c);
-        employeeReimbursement.maintainsAndTyres = String.valueOf(currentEmployeeReimbursement.Maintenance_and_Tires__c);
+        employeeReimbursement.fuel  =String.valueOf(currentEmployeeReimbursement.Fuel_Price__c);
+        employeeReimbursement.mileage  =String.valueOf(currentEmployeeReimbursement.Total_Mileage__c);
         String fixedandvariable ='';
         if(currentEmployeeReimbursement.Fixed_Amount__c != null)
         {
@@ -1869,11 +1866,11 @@ public with sharing class WrapperUtils
             {
                 
                 editedquery = setQueryParameters(monthList);
-                query = 'Select id,Month__c,Total_Variable_Rate__c,Fuel_Price__c,Total_Mileage__c,Fixed_Amount__c,Variable_Rate__c,Total_Monthly_Reimbursement__c,Contact_Id__c,Approved_Date__c,Status__c,Total_Pending__c,Monthly_Variable_Amount__c,Maintenance_and_Tires__c from Employee_Reimbursement__c where Contact_Id__c=\''+did+'\' and Month__c IN '+ editedquery;
+                query = 'Select id,Month__c,Total_Variable_Rate__c,Fuel_Price__c,Total_Mileage__c,Fixed_Amount__c,Variable_Rate__c,Total_Monthly_Reimbursement__c,Contact_Id__c,Approved_Date__c,Status__c,Total_Pending__c,Monthly_Variable_Amount__c from Employee_Reimbursement__c where Contact_Id__c=\''+did+'\' and Month__c IN '+ editedquery;
             }
             else
             {
-                query = 'Select id,Month__c,Total_Variable_Rate__c,Fuel_Price__c,Total_Mileage__c,Fixed_Amount__c,Variable_Rate__c,Total_Monthly_Reimbursement__c,Contact_Id__c,Approved_Date__c,Status__c,Total_Pending__c,Monthly_Variable_Amount__c,Maintenance_and_Tires__c from Employee_Reimbursement__c where Contact_Id__c=\''+did+'\'';
+                query = 'Select id,Month__c,Total_Variable_Rate__c,Fuel_Price__c,Total_Mileage__c,Fixed_Amount__c,Variable_Rate__c,Total_Monthly_Reimbursement__c,Contact_Id__c,Approved_Date__c,Status__c,Total_Pending__c,Monthly_Variable_Amount__c from Employee_Reimbursement__c where Contact_Id__c=\''+did+'\'';
             }              
             List<EmployeeReimbursements> reimbursementList =  new List<EmployeeReimbursements>();
             System.debug('query'+query);
@@ -1976,12 +1973,12 @@ public with sharing class WrapperUtils
         List<EmployeeMileages> employeeMileageList = new List<EmployeeMileages>();
         for(Employee_Mileage__c currentMileage : [SELECT id,Name,Trip_Date__c,Trip_Origin__c,Trip_Destination__c,Mileage__c,Variable__c,Trip_Status__c,
                                                             Approved_Date__c,EmployeeReimbursement__c,EmployeeReimbursement__r.month__c,
-                                                            EmployeeReimbursement__r.Contact_Id__c,CreatedDate,Rejected__c,EmployeeReimbursement__r.Fuel_Price__c,
+                                                            EmployeeReimbursement__r.Contact_Id__c,CreatedDate,Rejected__c,
                                                             EmployeeReimbursement__r.Total_Variable_Rate__c,EmployeeReimbursement__r.Total_Pending__c,
                                                             Origin_Name__c,Tracing_Style__c,StartTime__c,EndTime__c,Day_Of_Week__c,Destination_Name__c,
                                                             EmployeeReimbursement__r.Contact_Id__r.External_Email__c,EmployeeReimbursement__r.Monthly_Variable_Amount__c,
                                                             Maintenance_and_Tires__c,Fuel_price__c,EmployeeReimbursement__r.Total_Mileage__c,
-                                                            EmployeeReimbursement__r.Total_Rejected__c,Notes__c,EmployeeReimbursement__r.Maintenance_and_Tires__c
+                                                            EmployeeReimbursement__r.Total_Rejected__c,Notes__c 
                                                 FROM Employee_Mileage__c 
                                                 WHERE EmployeeReimbursement__r.Month__c =: month AND EmployeeReimbursement__r.Contact_Id__c =: did ])
         {
@@ -2001,7 +1998,7 @@ public with sharing class WrapperUtils
        
         String month = WrapperUtils.getMonthno(clickedMonth);      
         month = month +'-'+year;
-        String query = 'SELECT id,Name,Trip_Date__c,Trip_Origin__c,Trip_Destination__c,Mileage__c,Variable__c,Trip_Status__c,Approved_Date__c,EmployeeReimbursement__c,EmployeeReimbursement__r.month__c, EmployeeReimbursement__r.Contact_Id__c,CreatedDate,Rejected__c,EmployeeReimbursement__r.Total_Variable_Rate__c,EmployeeReimbursement__r.Total_Pending__c,Origin_Name__c,Tracing_Style__c,StartTime__c,EndTime__c,Day_Of_Week__c,Destination_Name__c,EmployeeReimbursement__r.Contact_Id__r.External_Email__c,EmployeeReimbursement__r.Monthly_Variable_Amount__c,Maintenance_and_Tires__c,Fuel_price__c,EmployeeReimbursement__r.Total_Mileage__c,EmployeeReimbursement__r.Total_Rejected__c,Notes__c,EmployeeReimbursement__r.Fuel_Price__c,EmployeeReimbursement__r.Maintenance_and_Tires__c FROM Employee_Mileage__c WHERE EmployeeReimbursement__r.Month__c = \''+month+'\' AND EmployeeReimbursement__r.Contact_Id__c =\''+did+'\'';      
+        String query = 'SELECT id,Name,Trip_Date__c,Trip_Origin__c,Trip_Destination__c,Mileage__c,Variable__c,Trip_Status__c,Approved_Date__c,EmployeeReimbursement__c,EmployeeReimbursement__r.month__c, EmployeeReimbursement__r.Contact_Id__c,CreatedDate,Rejected__c,EmployeeReimbursement__r.Total_Variable_Rate__c,EmployeeReimbursement__r.Total_Pending__c,Origin_Name__c,Tracing_Style__c,StartTime__c,EndTime__c,Day_Of_Week__c,Destination_Name__c,EmployeeReimbursement__r.Contact_Id__r.External_Email__c,EmployeeReimbursement__r.Monthly_Variable_Amount__c,Maintenance_and_Tires__c,Fuel_price__c,EmployeeReimbursement__r.Total_Mileage__c,EmployeeReimbursement__r.Total_Rejected__c,Notes__c FROM Employee_Mileage__c WHERE EmployeeReimbursement__r.Month__c = \''+month+'\' AND EmployeeReimbursement__r.Contact_Id__c =\''+did+'\'';      
         
         List<Employee_Mileage__c> employeeMileageList =  (List<Employee_Mileage__c>)ExecuteQueryUtil.getRecordListFromsObject(query);
         System.Debug(employeeMileageList);

@@ -1227,7 +1227,6 @@
                                             if(result != '') {
                                                 $scope.mileages = [];
                                                 $scope.mileages = JSON.parse(result);     
-                                                console.log($scope.mileages);
                                             }
                                             else
                                             {
@@ -1304,6 +1303,7 @@
                         };
 
                         $scope.openmodal = function(clickedMonth) {
+                        
                             $scope.clickedMonth = clickedMonth; 
                             $scope.emailofemployee = '{!emailofEmployee}';
                           //  console.log('$scope.adminname :- '+$scope.adminname);
@@ -1320,7 +1320,6 @@
                                     
                                             var resultdata = result.replace(/\\/g,'');
                                             var mileageList = JSON.parse(resultdata);
-                                            console.log("mileagelist",mileageList);
                                             $scope.exportReimList = [];
                                             
                                             $scope.exportReimList.push(["Contact Email","Tracking Style","Day Of Week","Trip Date","Start Time","End Time","Trip Origin","Trip Destination","Mileage","Status","Date Submitted","Date Approved","Maint/Tires","Fuel Rate","Variable Rate","Variable Amount","Notes"]);
@@ -1348,7 +1347,6 @@
                             );
                         };
 
-                     
                         $scope.empContact = {!obj_current_contact_details};
                         if($scope.empContact[0].Car_Image__c == null || $scope.empContact[0].Car_Image__c == '' || $scope.empContact[0].Car_Image__c == undefined)
                         {
@@ -1400,8 +1398,6 @@
                                         if(result != ''){
                                             $scope.mileages = [];
                                             $scope.mileages = JSON.parse(result); 
-                                            console.log($scope.mileages);
-
                                         }
                                         else
                                         {
@@ -1419,21 +1415,6 @@
                                 },
                                 {escape: false}
                             );
-                        }
-
-                        $scope.syncMileages = function(month,fuel,maintainsAndTyres){
-                            debugger
-                          $scope.getMonth = month;
-                          $scope.getYear = $scope.selectedYear;
-                          $scope.getFuel = fuel;
-                          $scope.getmaintTyre = maintainsAndTyres;
-                           Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.DriverDashboardFromAdminManager.TripCallout}',$scope.getMonth,$scope.getYear,$scope.getFuel,$scope.getmaintTyre,
-                                    function(result,event){
-                                       
-                                    },{escape: false}
-                           );
-
-
                         }
                         $scope.sortKey = 'intmonth';    //set the sortKey to the param passed   
                         $scope.reverse = true;
@@ -1584,7 +1565,6 @@
                                                     width="100%">
                                                     <thead>
                                                         <tr>
-                                                            <th></th>
                                                             <th >Month
                                                                 <span class="sort-icon pull-right" ></span> 
                                                             </th>
@@ -1608,7 +1588,6 @@
                                                     </thead>
                                                     <tbody class="driver-dashboard-table table-a-link">
                                                         <tr dir-paginate="ml in mileages |orderBy:sortKey:reverse |itemsPerPage:12">
-                                                            <td><button class="btn btn-primary" ng-click="syncMileages(ml.month,ml.fuel,ml.maintainsAndTyres)">Sync Mileages</button></td>
                                                             <td ng-click="openmodal(ml.month)"><a>{{ml.month}}</a></td>
                                                             <td ng-if="ml.fuel != null && ml.fuel != ''">${{ml.fuel}}</td>
                                                             <td ng-if="ml.fuel == null || ml.fuel == ''"></td>

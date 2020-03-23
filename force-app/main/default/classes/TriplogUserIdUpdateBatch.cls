@@ -59,9 +59,9 @@ global class TriplogUserIdUpdateBatch implements Database.Batchable<sObject>, Da
                             currentContact.Triplog_UserID__c = String.valueOf(currentUser.id);
                             currentContact.App__c = currentUser.appVersion;                            
                             currentContact.Is_Driver_In_Triplog__c = currentUser.driver;
-                            if(!appVersionList.contains(currentUser.appVersion)){
+                            /*if(!appVersionList.contains(currentUser.appVersion)){
                                 appUpdateMap.put(currentUser.email,currentContact.Firstname);
-                            }
+                            }*/
                             contactToUpdateList.add(currentContact);
                             emailSet.add(currentUser.email.toLowerCase());
                         }
@@ -146,14 +146,14 @@ global class TriplogUserIdUpdateBatch implements Database.Batchable<sObject>, Da
                 apexpages.addmessage(new apexpages.message(apexpages.severity.error,e.getMessage()));
             }
         }      
-        /*AI-000347 */
-        if(appUpdateMap.size() > 0){
+        
+        /*if(appUpdateMap.size() > 0){
             EmailTemplate emailTemplate = [SELECT Id,
                                                   HtmlValue,
                                                   Name,
                                                   Subject 
                                            FROM EmailTemplate 
-                                           WHERE DeveloperName = 'AndroidAndIOSAppVersion'];              
+                                           WHERE DeveloperName = 'Contact_external_email_not_found_in_triplog'];              
                  
 
             List<String> emailaddressofsending = new List<String>();  
@@ -162,14 +162,10 @@ global class TriplogUserIdUpdateBatch implements Database.Batchable<sObject>, Da
             for(String currentemail : appUpdateMap.keySet())
             {
                 messaging.singleEmailMessage mail = new messaging.singleEmailMessage();
-                String newBody = emailTemplate.HtmlValue;
-                newBody = newBody.replace('{!Contact.FirstName}',appUpdateMap.get(currentemail));
-                newBody = newBody.replace('{!$Label.Driver_Forword_Logo}', System.Label.Driver_Forword_Logo);
-                //newBody = newBody.replace('{!$Label.AndroidAndIOSAppVersion}', System.Label.AndroidAndIOSAppVersion);
-                //newBody = newBody.replace('{appVersion}', System.Label.Latest_App_Versions_In_Triplog);
-                mail.setHtmlBody(newBody);
-                mail.setSubject(emailTemplate.Subject);            
+                mail.setHtmlBody(emailTemplate.HtmlValue);
+                mail.setSubject('Please update your app');            
                
+                
                 List<String> emailaddressList = new List<String>();
                 emailaddressList.add(currentemail); 
                 mail.setToAddresses(emailaddressList);
@@ -181,7 +177,7 @@ global class TriplogUserIdUpdateBatch implements Database.Batchable<sObject>, Da
                 Messaging.sendEmail(mialingList);
             }
 
-        }
+        }*/
     } 
 
     public static String getTripIds(String passedApikey)

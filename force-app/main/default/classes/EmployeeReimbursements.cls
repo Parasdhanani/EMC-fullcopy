@@ -55,8 +55,6 @@ public with sharing class EmployeeReimbursements
     * @description totalReimbursements is Employee_Reimbursement__c's Total_Monthly_Reimbursement__c.
     */
     public String totalReimbursements {get;set;}
-
-    public String maintainsAndTyres {get;set;}
     /**
     @author Natavar Ghodasara
     @date 26th Feb 2019

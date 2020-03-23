@@ -169,10 +169,6 @@ public class ManagerDashboardController
     @RemoteAction
     public static String approveMileages(String checked,String selected,String name,String emailaddress)
     {        
-        System.debug('checked'+checked);
-        System.debug('selected'+selected);
-        System.debug('name'+name);
-        System.debug('emailaddress'+emailaddress);
         return WrapperUtils.approveMileagesForAdminDash(checked,selected,name,emailaddress);
     }
 

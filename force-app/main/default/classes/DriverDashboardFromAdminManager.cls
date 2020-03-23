@@ -136,7 +136,7 @@ public  class DriverDashboardFromAdminManager
     {   
         obj_currect_contact = [SELECT id, Name, MailingPostalCode, MailingState, MailingCity, 
                                         Fixed_Amount__c, compliancestatus__c, Car_Image__c, Account.Name, Account.Logo_Document_Id__c, 
-                                        Vehicle_Type__c,Insurance_Attachment_Id__c, Account.Triplog_API__c, Email 
+                                        Vehicle_Type__c,Insurance_Attachment_Id__c 
                                     FROM Contact 
                                     WHERE id =: getDriverid()];
         return String.escapeSingleQuotes(JSON.serialize(obj_currect_contact));
@@ -158,7 +158,7 @@ public  class DriverDashboardFromAdminManager
     @RemoteAction
     public static String getMileages(String clickedMonth,String clickedYear,String did)
     {
-        return String.escapeSingleQuotes(WrapperUtils.getMileages(clickedMonth,clickedYear,did));
+         return String.escapeSingleQuotes(WrapperUtils.getMileages(clickedMonth,clickedYear,did));
     } 
     @RemoteAction
     public static List<String> getCompliance(String did)
@@ -172,20 +172,4 @@ public  class DriverDashboardFromAdminManager
     {
         return WrapperUtils.getPacketandMeetingDetails(did);
     }   
-
-    @RemoteAction
-    public static void TripCallout(String month, String year){
-        System.debug('month'+ month +'year'+ year);
-        Map<String,String> monthNumberMap = new Map<String,String>{'January' => '01','February' => '02', 'March' => '03', 'April' => '04', 'May' => '05',
-                                                                    'June' => '06', 'July' => '07', 'August' => '08', 'September' => '09', 'Octomber' => '10',
-                                                                    'Novemver' => '11', 'December' => '12'};
-
-        String priMin =  year+'-'+monthNumberMap.get(month) + '-1';    
-        System.debug('priMin'+priMin);
-        String lastDate = String.valueOf(Date.valueOf(priMin).addDays(date.daysInMonth(Integer.valueOf(year), Integer.valueOf(monthNumberMap.get(month))) - 1));
-        system.debug('lastdate'+lastDate);
-        
-
-        
-    }
 }

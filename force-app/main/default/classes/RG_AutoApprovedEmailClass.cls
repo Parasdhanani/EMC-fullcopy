@@ -1,15 +1,13 @@
 public class RG_AutoApprovedEmailClass implements Database.Batchable<sObject> {
     public list<contact> start(Database.BatchableContext BC) {
-        List<String> obj_accountnames = new List<String>();
-        List<String> obj_accountnames1 = new List<String>();
-
+     List<String> obj_accountnames = new List<String>();
+     List<String> obj_accountnames1 = new List<String>();
         if(System.Label.TripstobeLogged!=null || System.Label.TripstobeLogged!= '')
         {
             if(System.Label.TripstobeLogged.contains(','))
             {
                 obj_accountnames= System.Label.TripstobeLogged.split(',');
             }
-            
             for(String s:obj_accountnames)
             {
                 s = s.trim();
@@ -236,7 +234,7 @@ public class RG_AutoApprovedEmailClass implements Database.Batchable<sObject> {
         SendEmail__c  objSendEmail = SendEmail__c.getValues('RG_AutoApprovedEmailClass');
         if(!mails.isEmpty() && !Test.isRunningTest()  &&(objSendEmail!=null) && (objSendEmail.Send_email_from_code__c==true)) {
             
-                //Messaging.sendEmail(mails);
+                Messaging.sendEmail(mails);
             
         }
     }

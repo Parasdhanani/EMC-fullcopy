@@ -1,4 +1,4 @@
-trigger mileageremoveapprovaldate on Employee_Mileage__c (before insert , before update) {
+trigger mileageremoveapprovaldate on Employee_Mileage__c (before update) {
     
-    MileageTriggerHandler.MileageRemoveApprovalDateHandler(Trigger.new);
+    
 }

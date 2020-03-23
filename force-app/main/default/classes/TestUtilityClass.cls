@@ -22,7 +22,7 @@ public class TestUtilityClass{
      public static Account getTestSingleAccount2(){
         Account acc = new Account();
         
-        acc.Name = 'Excelligence Learning Corporation';
+        acc.Name = 'Test Account';
         acc.BillingStreet = 'Test Street';
         acc.BillingCity = 'Test City';
         acc.BillingState = 'ON';
@@ -103,13 +103,7 @@ public class TestUtilityClass{
         return con;
      }
      public static Contact getTestSingleContact4(Account acc,Contact c) {
-        
-        Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
-        veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093359.jpg';
-        veh.vehicle__c =  'Full-Size Sedan';
-        veh.Year__c = '2019';
-        insert veh;
-        
+       
         Contact con = new Contact();
         
         con.FirstName = 'Test';

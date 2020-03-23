@@ -1,83 +1,94 @@
-/**
- * @File Name          : updateHourstoActionItem_Test.cls
- * @Description        : 
- * @Author             : ChangeMeIn@UserSettingsUnder.SFDoc
- * @Group              : 
- * @Last Modified By   : ChangeMeIn@UserSettingsUnder.SFDoc
- * @Last Modified On   : 28/2/2020, 12:39:32 pm
- * @Modification Log   : 
- * Ver       Date            Author      		    Modification
- * 1.0    27/2/2020   ChangeMeIn@UserSettingsUnder.SFDoc     Initial Version
-**/
 @isTest
 public class updateHourstoActionItem_Test 
 {
     @isTest static void testmethod1()
     {
-        
-		ActionItemCreateCustom__c objCustomSet = new ActionItemCreateCustom__c();
-		objCustomSet.Name = 'CustomData';
-		objCustomSet.Compare_Fields__c = 'Priority__c,Ticket_User__c';
-		objCustomSet.InsertEmailTemplate__c = 'New_ActionItem_Record_create_Template';
-		objCustomSet.UpdateEmailTemplate__c = 'Action_Item_Update_Email';
-		objCustomSet.IsInsertExecution__c = True;
-		objCustomSet.IsUpdateExecution__c = True;
-		objCustomSet.NewActionItemEmailCc__c = 'testdataset@gmail.com';
-		insert objCustomSet;
-
-		List<Ticket_User__c> ticketUserList = new List<Ticket_User__c>();
-		for(integer i=1; i<20; i++)
-		{
-			Ticket_User__c ticketUser = new Ticket_User__c();
-			ticketUser.Name = 'TestUser '+i;
-			ticketUser.Role__c = 'Admin';
-			ticketUser.email__c = 'testData'+i+'@gmail.com';
-			ticketUserList.add(ticketUser);
+        List<DailyStatus__c> listDailystatus = new List<DailyStatus__c>();
+        List<ActionItem__c> listActionitems = new List<ActionItem__c>();
+           
+		for(Integer i=0;i<=10;i++)//for loop for Actionitem
+		{   
+			Project__c projectobj = new Project__c();//project new obj
+			projectobj.Name = 'EMC'+ i;
+			insert projectobj;
+			
+			Ticket_User__c ticketobj = new Ticket_User__c();//ticketuser new obj
+			ticketobj.Name ='test'+ i;
+			ticketobj.Role__c = 'Admin';
+			insert ticketobj;
+			
+			ActionItem__c actionitemobj= new ActionItem__c();//new ationitemobj
+			actionitemobj.Total_Working_Hours__c = 20 + i;
+			actionitemobj.Project__c = projectobj.Id;
+			actionitemobj.Ticket_User__c = ticketobj.Id;
+			
+			insert actionitemobj;
+			listActionitems.add(actionitemobj);
 		}
-		insert ticketUserList;
-
-		Project__c project = new Project__c();
-		project.Name = 'Test Project';
-		insert project;
-
-		DateTime now = DateTime.now();
-		List<ActionItem__c> actionItemList = new List<ActionItem__c>();
-		for(integer i=1; i<15; i++)
-		{
-			ActionItem__c actionItem = new ActionItem__c();            
-			actionItem.Project__c = project.id;            
-			actionItem.Ticket_User__c = ticketUserList[i].id;
-			actionItem.Description__c = 'Test Description of class'+i;
-			actionItem.Status__c = 'Not Started';
-            actionItem.Priority__c = 'Medium';
-            actionItem.Type__c = 'Change Request';
-			actionItem.Due_Date__c = now+i;
-			actionItem.Effort_Estimation_In_Hours__c = 20+i;           
-			actionItemList.add(actionItem);			
-		}
-		insert actionItemList;
+		for(Integer i=0;i<=10;i++)// loop for dailystatus 1
 		
-		List<DailyStatus__c> listDailystatus = new List<DailyStatus__c>();
-		for(Integer i=0;i<=8;i++)// loop for dailystatus 1
 		{       
 			DailyStatus__c dailystatusobj = new DailyStatus__c();//dailystatus obj
-			if(i<7){
-				dailystatusobj.ActionItem__c = actionItemList[i].id;
-				
-			}else{
-				dailystatusobj.ActionItem__c =actionItemList[2].id;
-			}
+			dailystatusobj.ActionItem__c = listActionitems[i].id;
 			dailystatusobj.Working_Hours__c = 10 + i;
 			insert dailystatusobj;
 			listDailystatus.add(dailystatusobj);	
 		}
-		updateHourstoActionItemHandler.newDailyStUpdateAction(listDailystatus);
-		//updateHourstoActionItemHandler.existDailyStUpdateAction(listDailystatus);
-		
-		Integer hours=1;
-		for(DailyStatus__c daily :listDailystatus){	
+		for(Integer i=0;i<=10;i++)//loop for dailystatus 2
+		{            
+			DailyStatus__c dailystatusobj = new DailyStatus__c();//dailystatus obj
+			dailystatusobj.ActionItem__c = listActionitems[i].id;
+			dailystatusobj.Working_Hours__c = 10 + i;
+			insert dailystatusobj;
+			listDailystatus.add(dailystatusobj);
+		}
+			Integer hours=1;
+		for(DailyStatus__c daily :listDailystatus)
+		{	
 			daily.Working_Hours__c = hours++; //working hours update
 		}
-		update listDailystatus;
+			update listDailystatus;
+				
+		for(ActionItem__c act :listActionitems)
+		{	
+			act.Total_Working_Hours__c = hours++; //total working hours update
+		}
+		update listActionitems;
+	}
+    @isTest static void testmethod2()
+    {
+		List<DailyStatus__c> listDailystatus = new List<DailyStatus__c>(); //created actionitem again
+		List<ActionItem__c> listActionitems = new List<ActionItem__c>();    
+		Project__c projectobj = new Project__c();//project new obj
+		projectobj.Name = 'EMC 1';
+		insert projectobj;
+	
+		Ticket_User__c ticketobj = new Ticket_User__c();//ticketuser new obj
+		ticketobj.Name = 'test1';
+		ticketobj.Role__c ='Admin';
+		insert ticketobj;
+	
+		ActionItem__c actionitemobj = new ActionItem__c();//new ationitemobj
+		actionitemobj.Total_Working_Hours__c = 20;
+		actionitemobj.Project__c = projectobj.Id;
+		actionitemobj.Ticket_User__c = ticketobj.Id; 
+		listActionitems.add(actionitemobj);
+
+		ActionItem__c actionitemobj1 = new ActionItem__c();//new ationitemobj
+		actionitemobj1.Total_Working_Hours__c = 20;
+		actionitemobj1.Project__c = projectobj.Id;
+		actionitemobj1.Ticket_User__c = ticketobj.Id;
+		listActionitems.add(actionitemobj1);
+		insert listActionitems;
+			
+		DailyStatus__c dailystatusobj = new DailyStatus__c();//dailystatus obj
+		dailystatusobj.ActionItem__c = listActionitems[0].id;
+		dailystatusobj.Working_Hours__c = 10;
+		listDailystatus.add(dailystatusobj);
+		DailyStatus__c dailystatusobj1 = new DailyStatus__c();//dailystatus obj
+		dailystatusobj1.ActionItem__c = listActionitems[0].id;
+		dailystatusobj1.Working_Hours__c = 10;
+		listDailystatus.add(dailystatusobj1);
+		insert listDailystatus;
 	}
 }

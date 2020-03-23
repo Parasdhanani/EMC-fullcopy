@@ -6,8 +6,6 @@ public with sharing class drivermanagermydetailcontroller {
     public static String gaspriceforpreviosmonth {get; set;}
     public static List<contact> obj_currect_contact {get;set;}
     public static String obj_current_contact_details {get;set;}
-    public String accInsuranceList {get; set;}
-    public Integer insuranceSize {get;set;}
     public List<Attachment> obj_driver_insurance {get;set;}
     public List<Attachment> obj_driver_driverpacket {get;set;}
     public Integer obj_attachementsize {get;set;}
@@ -36,14 +34,6 @@ public with sharing class drivermanagermydetailcontroller {
         obj_attachementsize = obj_driver_insurance.size();
         obj_driver_driverpacket = [SELECT id, Body, Name FROM Attachment WHERE ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%Driver_Packet%' limit 1];
         obj_driverpacket_attachementsize = obj_driver_driverpacket.size();
-
-        accInsuranceList = '[]';
-        //AI-000414
-        if(getContactid()!=''&& getAccountid()!='')
-        {
-            List<Account> accInsurances = [SELECT id,Bodily_Injury__c, Uninsured_Motorist__c, Property_Damage__c, Comprehensive__c, Collision__c FROM account WHERE Id =: getAccountid()];
-           accInsuranceList = String.escapeSingleQuotes( JSON.serialize(accInsurances));
-        }
     }
     public static String getAccountid()
     {

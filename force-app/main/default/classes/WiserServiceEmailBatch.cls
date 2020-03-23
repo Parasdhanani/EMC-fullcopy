@@ -9,12 +9,12 @@ global class WiserServiceEmailBatch implements Database.Batchable<sObject>, Data
         empQuery = new List<Employee_Reimbursement__c>();
         
         empQuery = [Select id, 
-                           name,
-                           Contact_Id__c,
-                           Contact_Id__r.Name, 
-                           Contact_Id__r.External_Email__c,                                          
-                           Status__c,
-                           Total_Mileage__c 
+                      name,
+                      Contact_Id__c,
+                      Contact_Id__r.Name, 
+                      Contact_Id__r.External_Email__c,                                          
+                      Status__c,
+                      Total_Mileage__c 
                       from Employee_Reimbursement__c 
                       where Month__c =:ReqMonth  and Contact_Id__r.Account.Name = 'Weiser Security Services'
                                                  and (Contact_Id__r.Role__c = 'Driver' or Contact_Id__r.Role__c = 'Driver/Manager' or Contact_Id__r.Role__c =: StaticValues.roleAdminDriver)];         

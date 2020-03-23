@@ -1,14 +1,3 @@
-/**
- * @File Name          : ActionItemCreateTriggerHandlerTest.cls
- * @Description        : 
- * @Author             : ChangeMeIn@UserSettingsUnder.SFDoc
- * @Group              : 
- * @Last Modified By   : ChangeMeIn@UserSettingsUnder.SFDoc
- * @Last Modified On   : 28/2/2020, 1:08:05 pm
- * @Modification Log   : 
- * Ver       Date            Author      		    Modification
- * 1.0    28/2/2020   ChangeMeIn@UserSettingsUnder.SFDoc     Initial Version
-**/
 @isTest
 public with sharing class ActionItemCreateTriggerHandlerTest {
     static testmethod void test1(){
@@ -59,9 +48,7 @@ public with sharing class ActionItemCreateTriggerHandlerTest {
 		{
             actionItemList[i].Priority__c = 'High';
 			actionItemList[i].Ticket_User__c = ticketUserList[i].id;            
-		}
-		objCustomSet.IsUpdateExecution__c = True;
-		update objCustomSet;
+        }
         update actionItemList;
     }
 }

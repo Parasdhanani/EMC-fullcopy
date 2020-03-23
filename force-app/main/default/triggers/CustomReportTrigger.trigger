@@ -1,21 +1,67 @@
-/**
- * @File Name          : CustomReportTrigger.trigger
- * @Description        : 
- * @Author             : ChangeMeIn@UserSettingsUnder.SFDoc
- * @Group              : 
- * @Last Modified By   : ChangeMeIn@UserSettingsUnder.SFDoc
- * @Last Modified On   : 27/2/2020, 4:05:59 pm
- * @Modification Log   : 
- * Ver       Date            Author      		    Modification
- * 1.0    27/2/2020   ChangeMeIn@UserSettingsUnder.SFDoc     Initial Version
-**/
 trigger CustomReportTrigger on Custom_Report__c (before insert, before update) 
 {
-    if(Trigger.isInsert && Trigger.isBefore || Trigger.isUpdate && Trigger.isBefore){
-        List<Custom_Report__c> currentReportList = new List<Custom_Report__c>();
-        for(Custom_Report__c currentReportObj : Trigger.new){
-            currentReportList.add(currentReportObj);
+    for(Custom_Report__c currentReport : Trigger.new)
+    {
+        if(String.isNotBlank(currentReport.Report_Soql__c) && currentReport.Report_Soql__c.containsIgnoreCase('select') && currentReport.Report_Soql__c.containsIgnoreCase(',') && currentReport.Report_Soql__c.containsIgnoreCase('from'))
+        {
+            List<String> fieldsList = new List<String>();
+            String query =  currentReport.Report_Soql__c.removeStartIgnoreCase('select');
+            
+            query = query.toLowerCase();            
+            for(String currentFieldValue : String.valueOf((query.split('from'))[0]).split(','))
+            {
+                fieldsList.add(currentFieldValue.trim());
+            }
+            if(String.isNotBlank(currentReport.Date_Fields__c))
+            {
+                if(currentReport.Date_Fields__c.contains(','))
+                {
+                    for(String currentField : currentReport.Date_Fields__c.split(','))
+                    {
+                        CustomReportTriggerHandler.checkField(fieldsList,currentField,Label.Custom_Report_Err_Message.replace('***', 'Date'),currentReport);
+                    }
+                }
+                else 
+                {
+                    CustomReportTriggerHandler.checkField(fieldsList,currentReport.Date_Fields__c,Label.Custom_Report_Err_Message.replace('***', 'Date'),currentReport);                    
+                }                
+            }
+            if(String.isNotBlank(currentReport.Date_Time_Fields__c))
+            {
+                if(currentReport.Date_Time_Fields__c.contains(','))
+                {
+                    for(String currentField : currentReport.Date_Time_Fields__c.split(','))
+                    {
+                        CustomReportTriggerHandler.checkField(fieldsList,currentField,Label.Custom_Report_Err_Message.replace('***', 'Date Time'),currentReport);
+                    }
+                }
+                else 
+                {
+                    CustomReportTriggerHandler.checkField(fieldsList,currentReport.Date_Time_Fields__c,Label.Custom_Report_Err_Message.replace('***', 'Date Time'),currentReport);     
+                }                
+            }
+            if(String.isNotBlank(currentReport.Numeric_Fields__c))
+            {
+                if(currentReport.Numeric_Fields__c.contains(','))
+                {
+                    for(String currentField : currentReport.Numeric_Fields__c.split(','))
+                    {
+                        CustomReportTriggerHandler.checkField(fieldsList,currentField,Label.Custom_Report_Err_Message.replace('***', 'Numeric'),currentReport);
+                    }
+                }
+                else 
+                {
+                    CustomReportTriggerHandler.checkField(fieldsList,currentReport.Numeric_Fields__c,Label.Custom_Report_Err_Message.replace('***', 'Numeric'),currentReport); 
+                }                
+            }            
         }
-        CustomReportTriggerHandler.updateCurrentReport(currentReportList);
+        else if((!String.isNotBlank(currentReport.Report_Soql__c))||(!currentReport.Report_Soql__c.containsIgnoreCase('select'))||(!currentReport.Report_Soql__c.containsIgnoreCase('from')))
+        {
+            currentReport.addError(Label.Custom_Report_Err_Message.replace('*** Field', 'valid query'));
+        }
+        if(currentReport.Use_Driver_List__c!=true && currentReport.Use_Manager_List__c!=true)
+        {
+            currentReport.addError('Please Select 1 of the Filters');
+        }
     }
 }

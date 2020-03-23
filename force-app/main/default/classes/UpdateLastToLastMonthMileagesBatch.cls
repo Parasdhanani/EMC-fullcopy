@@ -15,10 +15,9 @@ global class UpdateLastToLastMonthMileagesBatch implements Database.Batchable<sO
         List<String> obj_accountnames1 = new List<String>();
         
         RG_InsertLastMonthReimbursement obj_RG_InsertLastMonthReimbursement = new  RG_InsertLastMonthReimbursement();
-        String lastMonth = obj_RG_InsertLastMonthReimbursement.getLastMonthValue(0);    
+        String lastMonth = obj_RG_InsertLastMonthReimbursement.getLastMonthValue(-1);    
         List<String> last2Months = new List<String>();
         uniqueemail= new Set<String>();
-        last2Months.add(obj_RG_InsertLastMonthReimbursement.getLastMonthValue(-1));
         last2Months.add(obj_RG_InsertLastMonthReimbursement.getLastMonthValue(-2));
         last2Months.add(obj_RG_InsertLastMonthReimbursement.getLastMonthValue(-3));
         if(System.Label.TripstobeLogged!=null || System.Label.TripstobeLogged!= '')

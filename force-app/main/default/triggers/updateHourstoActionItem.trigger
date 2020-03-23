@@ -1,43 +1,102 @@
-/**
- * @File Name          : updateHourstoActionItem.trigger
- * @Description        : 
- * @Author             : ChangeMeIn@UserSettingsUnder.SFDoc
- * @Group              : 
- * @Last Modified By   : ChangeMeIn@UserSettingsUnder.SFDoc
- * @Last Modified On   : 28/2/2020, 12:39:24 pm
- * @Modification Log   : 
- * Ver       Date            Author      		    Modification
- * 1.0    27/2/2020   ChangeMeIn@UserSettingsUnder.SFDoc     Initial Version
-**/
 trigger updateHourstoActionItem on DailyStatus__c (After Insert, After Update) 
 {
-    Map<String,Decimal> actionWorkHmap = new Map<String,Decimal>();
-    List<DailyStatus__c> newdailyStatusList =new List<DailyStatus__c>();
-    List<DailyStatus__c> existingdailyStatusList =new List<DailyStatus__c>();
-    if(Trigger.IsInsert && Trigger.IsAfter){
-        for(DailyStatus__c dailyStObj:Trigger.New){
-            newdailyStatusList.add(dailyStObj);
-        }
-        updateHourstoActionItemHandler.newDailyStUpdateAction(newdailyStatusList);
-    }
-    if(Trigger.IsUpdate && Trigger.IsAfter){
-        for(DailyStatus__c dailyStObj:Trigger.New){
-            if((Trigger.OldMap.get(dailyStObj.id).ActionItem__c==Trigger.NewMap.get(dailyStObj.id).ActionItem__c)&&(Trigger.OldMap.get(dailyStObj.id).Working_Hours__c!=Trigger.NewMap.get(dailyStObj.id).Working_Hours__c)){
-                existingdailyStatusList.add(dailyStObj);
+    Map<String,Decimal> obj_hours_actionitem = new Map<String,Decimal>();
+    
+    if(Trigger.IsInsert)
+    {
+        for(DailyStatus__c obj_current_status:Trigger.New)
+        {
+            if(!obj_hours_actionitem.containsKey(obj_current_status.ActionItem__c))
+            {
+                // if not exist
+                if(obj_current_status.Working_Hours__c!=null)
+                {
+                    obj_hours_actionitem.put(obj_current_status.ActionItem__c,obj_current_status.Working_Hours__c);
+                }
+                else
+                {
+                    obj_hours_actionitem.put(obj_current_status.ActionItem__c,0);
+                }               
+            }
+            else
+            {
+                //if exist
+                Decimal workinghours = obj_hours_actionitem.get(obj_current_status.ActionItem__c);
+                if(obj_current_status.Working_Hours__c!=null)
+                {                     
+                     workinghours = workinghours +obj_current_status.Working_Hours__c;                     
+                }
+                else
+                {                     
+                     workinghours = workinghours +0;                     
+                }
+                obj_hours_actionitem.put(obj_current_status.ActionItem__c,workinghours);
             }
         }
-        updateHourstoActionItemHandler.existDailyStUpdateAction(existingdailyStatusList);
     }
-    /* if(Trigger.IsDelete)
+    else if(Trigger.IsUpdate)
     {
-        for(ActionItem__c obj:[Select id,Total_Working_Hours__c from ActionItem__c where id=:actionWorkHmap.keySet()])
+        for(DailyStatus__c obj_current_status:Trigger.New)
         {
-             obj.Total_Working_Hours__c = actionWorkHmap.get(obj.id); 
-             actionItList.add(obj);     
+            if((Trigger.OldMap.get(obj_current_status.id).ActionItem__c==Trigger.NewMap.get(obj_current_status.id).ActionItem__c)&&(Trigger.OldMap.get(obj_current_status.id).Working_Hours__c!=Trigger.NewMap.get(obj_current_status.id).Working_Hours__c))
+            {
+                if(!obj_hours_actionitem.containsKey(obj_current_status.ActionItem__c))
+                {
+                    // if not exist
+                    if(obj_current_status.Working_Hours__c!=null)
+                    {
+                         obj_hours_actionitem.put(obj_current_status.ActionItem__c,obj_current_status.Working_Hours__c);
+                    }
+                    else
+                    {
+                        obj_hours_actionitem.put(obj_current_status.ActionItem__c,0);
+                    }                   
+                }
+                else
+                {
+                    //if exist
+                    Decimal workinghours = obj_hours_actionitem.get(obj_current_status.ActionItem__c);
+                    if(obj_current_status.Working_Hours__c!=null)
+                    {                     
+                         workinghours = workinghours +obj_current_status.Working_Hours__c;                     
+                    }
+                    else
+                    {                     
+                         workinghours = workinghours +0;                     
+                    }
+                    obj_hours_actionitem.put(obj_current_status.ActionItem__c,workinghours);
+                }
+            }            
+        }
+    }
+    
+    List<ActionItem__c> obj_list_ActionItems = new List<ActionItem__c>();
+    if(Trigger.IsUpdate)
+    {
+        for(ActionItem__c obj:[Select id,Total_Working_Hours__c from ActionItem__c where id=:obj_hours_actionitem.keySet()])
+        {
+             obj.Total_Working_Hours__c = obj.Total_Working_Hours__c + obj_hours_actionitem.get(obj.id); 
+             obj_list_ActionItems.add(obj);     
+        }
+    }
+    else if(Trigger.IsInsert)
+    {
+        for(ActionItem__c obj:[Select id,Total_Working_Hours__c from ActionItem__c where id=:obj_hours_actionitem.keySet()])
+        {
+             obj.Total_Working_Hours__c = obj_hours_actionitem.get(obj.id); 
+             obj_list_ActionItems.add(obj);     
+        }   
+    }    
+    else if(Trigger.IsDelete)
+    {
+        for(ActionItem__c obj:[Select id,Total_Working_Hours__c from ActionItem__c where id=:obj_hours_actionitem.keySet()])
+        {
+             obj.Total_Working_Hours__c = obj_hours_actionitem.get(obj.id); 
+             obj_list_ActionItems.add(obj);     
         }   
     }
-    if(actionItList.size()>0)
+    if(obj_list_ActionItems.size()>0)
     {
-        update actionItList;
-    }*/    
+        update obj_list_ActionItems;
+    }    
 }

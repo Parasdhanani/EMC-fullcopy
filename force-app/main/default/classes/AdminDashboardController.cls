@@ -4,7 +4,6 @@ public with sharing class AdminDashboardController {
     public static String totalmileages{get;set;}
     public static String nameofEmployee{get;set;}
     public static String emailofEmployee{get;set;}
-    public static boolean insurancePage {get; set;}
     public static Boolean showTeamRecord{get;set;}
     public static String totalvariableamount{get;set;}
    
@@ -51,14 +50,11 @@ public with sharing class AdminDashboardController {
     
 
     public static void setEmployeeName() {
-        Contact employee= [SELECT Id, Name, showTeamRecord__c, External_Email__c,Insurance_Attachment_Id__c FROM Contact WHERE id =: getContactid()];
+        Contact employee= [SELECT Id, Name, showTeamRecord__c, External_Email__c FROM Contact WHERE id =: getContactid()];
         if(employee!=null)
         {
             emailofEmployee = employee.External_Email__c;
-            nameofEmployee= String.escapeSingleQuotes(employee.Name); // Name of the Employee
-            if(employee.Insurance_Attachment_Id__c != null){
-                insurancePage = true;
-            }            
+            nameofEmployee= String.escapeSingleQuotes(employee.Name); // Name of the Employee            
         }
         else
         {

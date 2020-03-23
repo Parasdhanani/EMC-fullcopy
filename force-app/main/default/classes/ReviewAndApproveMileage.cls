@@ -65,7 +65,7 @@ global class ReviewAndApproveMileage implements Database.Batchable<sObject>, Dat
                         mail.setToAddresses(toAddresses);
                         mail.setSubject('Monthly mileage approval');
                         
-                        mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','natavar.goc@gmail.com','sanket.goc@gmail.com'});
+                        mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','natavar.goc@gmail.com'});
                         String newBody = emailTemplate[0].HTMLValue;
                         newBody =  newBody.replace('{table}',htmlbody);
                         newBody = newBody.replace('{!$Label.Driver_Forword_Logo}', System.Label.Driver_Forword_Logo);
@@ -82,7 +82,7 @@ global class ReviewAndApproveMileage implements Database.Batchable<sObject>, Dat
                         // String[] toAddresses = new String[] {managerEmail}; //managerEmail
                         String[] toAddresses = new String[] {obj_currentcontact.External_Email__c}; //managerEmail
                         mail.setToAddresses(toAddresses);
-                        mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','natavar.goc@gmail.com','sanket.goc@gmail.com'});
+                        mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','natavar.goc@gmail.com'});
                         mail.setSubject('Monthly mileage approval');
                         String newBody = emailTemplate[0].HTMLValue;
                         newBody =  newBody.replace('{table}',htmlbody);
