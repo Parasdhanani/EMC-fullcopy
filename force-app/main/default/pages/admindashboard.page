@@ -1564,13 +1564,13 @@
                 }
                
                 $scope.CheckUncheckHeader = function(status,elem) {
-                    debugger
+                    
                     var total = $('.myteamcheck').length;
                     var count = 0;
                     var myteamlen = $scope.AllDriversLastMonthReimbursements.length;
                     var countstatus = 0;
                     angular.forEach($scope.AllDriversLastMonthReimbursements, function (item) {
-                        debugger
+                        
                         if(item.isSelected && item.status != 'Approved'){
                         $scope.myTeamReimbusement.push(item.id);
                             count++;

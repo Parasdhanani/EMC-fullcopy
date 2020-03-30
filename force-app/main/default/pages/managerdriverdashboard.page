@@ -971,7 +971,7 @@
 
                 app.controller('ManagerDashboardController', ['$scope','$filter','$modal',
                     function($scope,$filter,$modal) {
-                        debugger
+                        
                         var url_string = $(location).attr("href");
                         var url = new URL(url_string);
                         $scope.manid = url.searchParams.get("manid");

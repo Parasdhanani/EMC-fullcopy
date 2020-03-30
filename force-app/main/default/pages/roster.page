@@ -1069,11 +1069,11 @@
                 }
               
                 $scope.deactivateChange = function(empdate,emp){
-                    debugger
+                    
                     angular.forEach($scope.empupdatelist,function(emp){
-                        debugger
+                        
                         if(emp.IsMassDeactivated){
-                            debugger
+                            
                             emp.deactivaedDate = empdate;
                         }
                     });
@@ -1581,7 +1581,7 @@
                 /* Contact Insert Before Check Is already available or not */
                 $scope.createUpdateContact = function(con,elementId, sourceId, suffix, form, update) 
                 {
-                    debugger
+                    
                     $('#spinner').show();  
                   //  console.log('city:--'+JSON.stringify(con.city));
                  //   console.log('vehicalType:--'+JSON.stringify(con.vehicalType));
@@ -1663,18 +1663,18 @@
 
                                     Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.RosterController.getContactByEmailAddress}',$scope.editUserEmail,
                                     function(result, event){
-                                        debugger
+                                        
                                         if(event.status && result !=null)
                                         {
                                             if(result != "Fail")
                                             {
                                              //   console.log("response of getContactByEmailAddress Not Fail");
-                                               debugger
+                                               
                                                 $scope.contactListForUpdateInsert.userid = result;
                                                 
                                                 Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.RosterController.manageEmployee}',JSON.stringify($scope.contactListForUpdateInsert),$scope.accid,$scope.id,
                                                 function(result, event){
-                                                    debugger
+                                                    
                                                     if(event.status && result != null)
                                                     {
                                                       if(!result.hasError){
@@ -1711,9 +1711,9 @@
                                                 
                                                 Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.RosterController.manageEmployee}',JSON.stringify($scope.contactListForUpdateInsert),$scope.accid,$scope.id,
                                                     function(result, event){
-                                                        debugger
+                                                        
                                                         if(event.status && result != null) {
-                                                            debugger
+                                                            
                                                             if(!result.hasError)
                                                             {
                                                                 $scope.IsShow = false;
@@ -1782,13 +1782,13 @@
                                     Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.RosterController.getContactByEmailAddress}',$scope.editUserEmail,
                                     function(result, event){
                                         if(event.status && result !=null) {
-                                            debugger
+                                            
                                             if(result != "Fail")
                                             {
                                                 $scope.contactListForUpdateInsert.userid = result;
                                                 Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.RosterController.manageEmployee}',JSON.stringify($scope.contactListForUpdateInsert),$scope.accid,$scope.id,
                                                 function(result, event){
-                                                    debugger
+                                                    
                                                     if(event.status && result != null)
                                                     {
                                                       if(!result.hasError){
@@ -1818,9 +1818,9 @@
                                             {
                                                 Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.RosterController.manageEmployee}',JSON.stringify($scope.contactListForUpdateInsert),$scope.accid,$scope.id,
                                                     function(result, event){
-                                                        debugger
+                                                        
                                                         if(event.status && result != null) {
-                                                            debugger
+                                                            
                                                             if(!result.hasError)
                                                             {
                                                                 $scope.IsShow = false;
