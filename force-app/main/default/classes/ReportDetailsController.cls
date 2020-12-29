@@ -54,7 +54,7 @@ public with sharing class ReportDetailsController
     public static String getReportDetail(String reportid)
     {
         List<String> obj_list_of_headers = new List<String>();
-        String query = 'Select id,Name,Report_Type__c,Report_Soql__c,Report_Header__c,Date_Fields__c,Date_Time_Fields__c,Numeric_Fields__c,Report_Category__c,Use_Bussiness_Unit__c,Use_Driver_List__c,Use_Manager_List__c from Custom_Report__c where id=\''+reportid+'\'';
+        String query = 'Select id,Name,Report_Type__c,Report_Soql__c,Report_Header__c,Date_Fields__c,Date_Time_Fields__c,Date_Time_To_Time__c,Numeric_Fields__c,Report_Category__c,Use_Bussiness_Unit__c,Use_Driver_List__c,Use_Manager_List__c from Custom_Report__c where id=\''+reportid+'\'';
         obj_current_report = (Custom_Report__c)(((List<Custom_Report__c>)ExecuteQueryUtil.getRecordListFromsObject(query))[0]);
         return String.escapeSingleQuotes(JSON.serialize(obj_current_report)); 
        // return '';     
@@ -704,6 +704,54 @@ public with sharing class ReportDetailsController
                     return JSON.serialize(obj_contact_list);
                 }
             }  
+            else if(reporttype=='Mileages Between 2 Trip Dates') 
+            {
+               
+                if(selectedManager==null || selectedManager=='')
+                {System.debug('tripStartDate'+tripStartDate);
+                System.debug('tripEndDate'+tripEndDate);
+                    if(!query.contains('where'))
+                    {
+                        query = query+ ' where Trip_Date__c>='+buildDateforTripDate(tripStartDate)+' AND Trip_Date__c<='+buildDateforTripDate(tripEndDate)+ ' AND EmployeeReimbursement__r.Contact_Id__r.accountid=\''+accountid+'\'';                        
+                    }
+                    else
+                    {   // yes
+                        query = query + ' AND Trip_Date__c>='+buildDateforTripDate(tripStartDate)+' AND Trip_Date__c<='+buildDateforTripDate(tripEndDate)+ ' AND EmployeeReimbursement__r.Contact_Id__r.accountid=\''+accountid+'\'';
+                    }
+                    System.debug(query);
+                    List<Employee_Mileage__c> obj_contact_list = Database.query(query);
+                    return JSON.serialize(obj_contact_list);
+                }            
+                else
+                {
+                    if(driverormanager=='Manager')
+                    {
+                        if(!query.contains('where'))
+                        {
+                            query = query+ ' where Trip_Date__c>='+buildDateforTripDate(tripStartDate)+' AND Trip_Date__c<='+buildDateforTripDate(tripEndDate)+' AND EmployeeReimbursement__r.Contact_Id__r.Manager__c=\''+selectedManager+'\''+ ' AND EmployeeReimbursement__r.Contact_Id__r.accountid=\''+accountid+'\'';                       
+                        }
+                        else
+                        {   // yes
+                            query = query + ' AND Trip_Date__c>='+buildDateforTripDate(tripStartDate)+' AND Trip_Date__c<='+buildDateforTripDate(tripEndDate)+' AND EmployeeReimbursement__r.Contact_Id__r.Manager__c=\''+selectedManager+'\''+ ' AND EmployeeReimbursement__r.Contact_Id__r.accountid=\''+accountid+'\'';
+                        }
+                    }
+                    else
+                    {
+                        if(!query.contains('where'))
+                        {
+                            query = query+ ' where Trip_Date__c>='+buildDateforTripDate(tripStartDate)+' AND Trip_Date__c<='+buildDateforTripDate(tripEndDate)+' AND EmployeeReimbursement__r.Contact_Id__c=\''+selectedManager+'\''+ ' AND EmployeeReimbursement__r.Contact_Id__r.accountid=\''+accountid+'\'';                       
+                        }
+                        else
+                        {   // yes
+                            query = query + ' AND Trip_Date__c>='+buildDateforTripDate(tripStartDate)+' AND Trip_Date__c<='+buildDateforTripDate(tripEndDate)+' AND EmployeeReimbursement__r.Contact_Id__c=\''+selectedManager+'\''+ ' AND EmployeeReimbursement__r.Contact_Id__r.accountid=\''+accountid+'\'';
+                        }
+                    }
+                    
+                    System.debug(query);
+                    List<Employee_Mileage__c> obj_contact_list = Database.query(query);
+                    return JSON.serialize(obj_contact_list);
+                }
+            } 
             else if(reporttype=='Mileages Between 2 Dates for Month Range') 
             {
                 
@@ -857,13 +905,47 @@ public with sharing class ReportDetailsController
     }
     public static String getAllReportSoqlForDriver()
     {     
-
-        return getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',String.valueOf((System.today().addMonths(-1).toStartOfMonth()).format()),String.valueOf((System.today().toStartOfMonth()).format()),getContactid(),getAccountid(),getReportid(),'Driver'); 
+        string data;
+        if(obj_current_report.Report_Type__c == 'Mileages Between 2 Trip Dates'){
+            String LastMonth = String.valueof(System.today().addMonths(-1).month());
+            String CurrentMonth = String.valueof(System.today().month());
+            if(System.today().addMonths(-1).month() < 10){
+                LastMonth = '0'+System.today().addMonths(-1).month();
+            }
+            if(System.today().month() < 10){
+                CurrentMonth = '0'+System.today().month();
+            }
+            String lastmonthdate = System.today().addMonths(-1).year()+'-'+LastMonth+'-01';
+            String currentMonthDate = System.today().year()+'-'+CurrentMonth+'-01';
+            data = getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',lastmonthdate,currentMonthDate,getContactid(),getAccountid(),getReportid(),'Driver'); 
+        }
+        else {
+            //data = getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',String.valueOf((System.today().addMonths(-1).toStartOfMonth()).format()),String.valueOf((System.today().toStartOfMonth()).format()),getContactid(),getAccountid(),getReportid(),'Driver'); 
+            data = getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',String.valueOf((System.today().addMonths(-1).toStartOfMonth()).format()), String.valueOf(system.today().addMonths(0).toStartofMonth().addDays(-1).format()),getContactid(),getAccountid(),getReportid(),'Driver'); 
+        }
+        return data;
+        //return getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',String.valueOf((System.today().addMonths(-1).toStartOfMonth()).format()),String.valueOf((System.today().toStartOfMonth()).format()),getContactid(),getAccountid(),getReportid(),'Driver'); 
     }
     public static String getAllReportSoqlForManager()
     {     
-
-        return getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',String.valueOf((System.today().addMonths(-1).toStartOfMonth()).format()),String.valueOf((System.today().toStartOfMonth()).format()),getContactid(),getAccountid(),getReportid(),'Manager'); 
+        string data;
+        if(obj_current_report.Report_Type__c == 'Mileages Between 2 Trip Dates'){
+            String LastMonth = String.valueof(System.today().addMonths(-1).month());
+            String CurrentMonth = String.valueof(System.today().month());
+            if(System.today().addMonths(-1).month() < 10){
+                LastMonth = '0'+System.today().addMonths(-1).month();
+            }
+            if(System.today().month() < 10){
+                CurrentMonth = '0'+System.today().month();
+            }
+            String lastmonthdate = System.today().addMonths(-1).year()+'-'+LastMonth+'-01';
+            String currentMonthDate = System.today().year()+'-'+CurrentMonth+'-01';
+            data = getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',String.valueOf((System.today().addMonths(-1).toStartOfMonth()).format()),String.valueOf((System.today().toStartOfMonth()).format()),getContactid(),getAccountid(),getReportid(),'Manager'); 
+        } else {
+            data = getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',String.valueOf((System.today().addMonths(-1).toStartOfMonth()).format()),String.valueOf((System.today().toStartOfMonth()).format()),getContactid(),getAccountid(),getReportid(),'Manager'); 
+        }
+        return data;
+         //return getAllReportSoql1(obj_current_report.Report_Soql__c,obj_current_report.Report_Type__c,'',String.valueOf((System.today().addMonths(-1).toStartOfMonth()).format()),String.valueOf((System.today().toStartOfMonth()).format()),getContactid(),getAccountid(),getReportid(),'Manager'); 
     }
     @RemoteAction
     public static String getAllReportSoql(String reportSoql,String reporttype,String selectedManager, String tripStartDate, String tripEndDate,String contactid,String accountid,String reportid,String driverormanager)
@@ -1053,6 +1135,19 @@ public with sharing class ReportDetailsController
         String value = myDate.year() + '-' + monthString + '-' + dayString;
         return value;    
     }
+    public static String buildDateforTripDate(String param1){
+        String delimiter = '/';
+        String date1;
+        if(param1.contains('/')){
+            List<String> stringList = Utils.SplitStringToList(param1,delimiter);
+            date1 = '20'+stringList[2]+'-'+stringList[0]+'-'+stringList[1];
+        }
+        else {
+            date1 = param1;
+        }
+        system.debug('date1'+date1);
+        return date1;
+    }
     public static String buildDate(String datefield)
     {
         Date myDate = date.parse(datefield);
@@ -1147,5 +1242,10 @@ public with sharing class ReportDetailsController
         editedquery = editedquery+' )';
         
         return editedquery;
+    }
+
+    @RemoteAction
+    public static void postTotalReimbursementForAllUser(){
+        UploadConcurQuickExpenseTriplog.postTotalReimbursementForAllUser();
     }
 }

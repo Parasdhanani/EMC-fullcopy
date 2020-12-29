@@ -6,12 +6,23 @@ public Class MappingGasPriceTriggerTest{
         TriggerConfig__c customSetting =  new TriggerConfig__c();
         customSetting.Name = 'Defaulttrigger';
         customSetting.MappingGasPriceTrigger__c = true;
+        customSetting.MappingGasStayTime__c = true;
+        customSetting.ContactTriggersendEmailForNewContact__c = true;
+        customSetting.ContactTriCommunityReimCreate__c = true;
         insert customSetting;
-
+        
+        List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
+        
         SendEmail__c customSetting1 =  new SendEmail__c();
         customSetting1.Name = 'Send Email For Compliance';
         customSetting1.Send_email_from_code__c= true;
         insert customSetting1;
+        
+        daylight_saving_time_config__c customSetting2 =  new daylight_saving_time_config__c();
+        customSetting2.Name = '2020';
+        customSetting2.Start_Date__c = System.today();
+        customSetting2.End_Date__c = System.today() + 60;
+        insert customSetting2;
         
         Account acc = new Account();
         acc.Name = 'Test Account';
@@ -24,6 +35,7 @@ public Class MappingGasPriceTriggerTest{
         con.Fixed_Amount__c = 371.28;
         con.MailingCity = 'Abilene';
         con.MailingState = 'TX';
+        con.Time_Zone__c = 'US/Mountain' ;
         con.Driving_States__c = 'TX';
         con.Time_Zone__c = 'America/Chicago';
         con.Monthly_Mileage_Limit__c = 100.00;
@@ -54,9 +66,10 @@ public Class MappingGasPriceTriggerTest{
         emp.Trip_Status__c = StaticValues.noApprovedYet;
         emp.Mileage__c = 10.00;
         emp.Fuel_price__c = 10.00;
+        emp.TimeZone__c = 'US/Mountain' ;
         emp.StartTime__c = system.now();
         emp.EndTime__c =  system.now();
-        emp.Trip_Date__c =date.today().adddays(-1);
+        emp.Trip_Date__c = date.today().adddays(-1);
         insert emp;
         
         Employee_Reimbursement__c er1 = new Employee_Reimbursement__c();
@@ -72,12 +85,20 @@ public Class MappingGasPriceTriggerTest{
         emp1.Name = 'Test Mileage Record';
         emp1.Trip_Status__c = StaticValues.noApprovedYet;
         emp1.Mileage__c = 10.00;
+        emp1.TimeZone__c = 'US/Mountain' ;
         emp1.StartTime__c = system.now();
         emp1.EndTime__c =  system.now();
         emp1.Trip_Date__c =date.today().adddays(-1);
         insert emp1;
         
         emp1.StartTime__c = emp1.StartTime__c.addSeconds(4);
+        emp1.Trip_Status__c = 'Approved';
         update emp1;
+        Map<ID,Employee_Mileage__c> milMap = new Map<ID,Employee_Mileage__c>();
+        milMap.put(emp1.id,emp1);
+        List<Employee_Mileage__c> mileageNew = new List<Employee_Mileage__c> ();
+		mileageNew.add(emp1);
+        MappingGasPriceTriggerHelper.TrackHistory(milMap,mileageNew);
+        
     }
 }

@@ -5,7 +5,12 @@ public class  DeActivatedUserBatchTest {
         objSendEmail.Name = 'Send Email For Compliance';
         objSendEmail.Send_email_from_code__c = false;
         insert objSendEmail;
-
+		
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
+        
         Account ac = new Account();
         ac.Name = 'test2';
         ac.Triplog_API__c = 'test2';

@@ -3,6 +3,11 @@ public class ReportDetailsController_test {
     public static boolean flag {get;set;}
      public static testmethod void TestMethod1() 
      {        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriCommunityReimCreate__c = false;
+        insert customEmailSetting;
+
          flag= false;
         List<Contact> driverlist = insertrecords();
         insertReimbursements(driverlist);
@@ -85,6 +90,13 @@ public class ReportDetailsController_test {
         
         Custom_Report__c rep14 =createReport('Select id from Employee_Reimbursement__c','Reimbursements Between 2 Deactivation Dates');
         insert rep14;        
+
+        Custom_Report__c rep15 =createReport('Select id from Employee_Mileage__c','Mileages Between 2 Trip Dates');
+        insert rep15;
+        ReportDetailsController.getAllReportSoql(rep15.Report_Soql__c,rep15.Report_Type__c,'','01/08/19','01/09/19',obj_admin.Id,obj_account.Id,rep13.Id,'Driver');
+        ReportDetailsController.getAllReportSoql(rep15.Report_Soql__c,rep15.Report_Type__c,obj_manager.id,'01/08/19','01/09/19',obj_admin.Id,obj_account.Id,rep13.Id,'Driver');
+        ReportDetailsController.getAllReportSoqlForDriver();
+
         Contact drivercontact = RecordUtilityClass.getDriverContact();
         drivercontact.Deactivated_Date__c = System.today();
         update drivercontact;
@@ -100,6 +112,11 @@ public class ReportDetailsController_test {
      }
      public static testmethod void TestMethod2() 
      {      
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriCommunityReimCreate__c = false;
+        insert customEmailSetting;
+
           flag= false;  
         List<Contact> driverlist = insertrecords();
         insertReimbursements(driverlist);
@@ -183,17 +200,28 @@ public class ReportDetailsController_test {
         ReportDetailsController.getAllReportSoql(rep13.Report_Soql__c,rep13.Report_Type__c,'','01/08/19','01/09/19',obj_admin.Id,obj_account.Id,rep13.Id,'Manager');
         ReportDetailsController.getAllReportSoql(rep13.Report_Soql__c,rep13.Report_Type__c,obj_manager.id,'01/08/19','01/09/19',obj_admin.Id,obj_account.Id,rep13.Id,'Manager');
         ReportDetailsController.getAllReportSoqlForDriver();
+        ReportDetailsController.buildDateforTripDate('9/1/2020');
         Test.stopTest();
 
         
      }
      public static testmethod void TestMethod3() 
      { 
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriCommunityReimCreate__c = false;
+        insert customEmailSetting;
+
          ReportDetailsController.getAllManagers('Driver');
          ReportDetailsController.getAllManagers('Manager');
      }
      public static testmethod void TestMethod4() 
      {      
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriCommunityReimCreate__c = false;
+        insert customEmailSetting;
+
           flag= false;  
         List<Contact> driverlist = insertrecords();
         
@@ -227,6 +255,11 @@ public class ReportDetailsController_test {
      }
      public static testmethod void TestMethod5() 
      {        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriCommunityReimCreate__c = false;
+        insert customEmailSetting;
+
          flag= false;
         List<Contact> driverlist = insertrecords();
         insertReimbursements(driverlist);
@@ -324,6 +357,11 @@ public class ReportDetailsController_test {
      }
      public static List<Contact> insertrecords()
      {
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriCommunityReimCreate__c = false;
+        insert customEmailSetting;
+        List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
         RecordUtilityClass.sendEmailforCompliance();
         RecordUtilityClass.enableMappingGasPriceTrigger();
         Account obj_Account = RecordUtilityClass.buildAccount();
@@ -355,6 +393,11 @@ public class ReportDetailsController_test {
      }
      public static void insertReimbursements(List<Contact> driverList)
      {
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriCommunityReimCreate__c = false;
+        insert customEmailSetting;
+
         list<Gas_Prices__c> gaslist = RecordUtilityClass.buildGasPrice();
         insert gaslist;
         list<Employee_Reimbursement__c> obj_Employee_Reimbursement_list = RecordUtilityClass.buildPendingEmployee_Reimbursement(driverList);
@@ -365,6 +408,11 @@ public class ReportDetailsController_test {
      }
      public static Custom_Report__c createReport(String reportsoql,String reporttype)
      {
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriCommunityReimCreate__c = false;
+        insert customEmailSetting;
+
         Custom_Report__c rep = new Custom_Report__c();
         rep.Name = 'Test Productivity Report';
         rep.Report_Category__c = 'My Custom Reports';

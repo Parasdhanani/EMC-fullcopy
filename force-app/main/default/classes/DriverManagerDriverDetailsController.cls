@@ -16,8 +16,10 @@ public with sharing class DriverManagerDriverDetailsController
     public static String obj_current_contact_details {get;set;}
     public List<Attachment> obj_driver_insurance {get;set;}
     public List<Attachment> obj_driver_driverpacket {get;set;}
+    public List<Attachment>  obj_driver_driverMVR {get;set;}
     public Integer obj_attachementsize {get;set;}
     public Integer obj_driverpacket_attachementsize {get;set;}
+    public Integer obj_driverpacket_attachMVRsize {get;set;}
     public static Boolean showlastyear {get;set;}
     /**
     @author Natavar Ghodasara
@@ -27,6 +29,7 @@ public with sharing class DriverManagerDriverDetailsController
     public DriverManagerDriverDetailsController() 
     {
         obj_currect_contact = new List<contact>();
+        obj_driver_driverMVR = new List<Attachment>();
         obj_current_contact_details = getDriverDetails();
         setEmployeeName();
         System.debug('obj_currect_contact:--'+obj_currect_contact);
@@ -41,6 +44,8 @@ public with sharing class DriverManagerDriverDetailsController
         obj_attachementsize = obj_driver_insurance.size();
         obj_driver_driverpacket = [SELECT id, Body, Name FROM Attachment WHERE ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%Driver_Packet%' limit 1];
         obj_driverpacket_attachementsize = obj_driver_driverpacket.size();
+        obj_driver_driverMVR = [SELECT Id, Body, Name FROM Attachment WHERE ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%MVR%' limit 1];
+        obj_driverpacket_attachMVRsize = obj_driver_driverMVR.size();
     }
     public static String getAccountid()
     {
@@ -185,4 +190,18 @@ public with sharing class DriverManagerDriverDetailsController
     {
         return WrapperUtils.getPacketAttachments(did);
     }*/
+    
+    //method is use for fatch mileages from triplog 
+    //AI-000429
+    @RemoteAction
+    public static void TripCallout(Id driverId, String month, String year, String fuel, String maintTyre, Id empReID,String mpg,string status){
+        WrapperUtils.TripCallout(driverId,month,year,fuel,maintTyre,empReID,mpg,status);
+    }
+
+    //method is use for change reimbursement status 
+    //AI-000429
+    @RemoteAction
+    public static void UpdateReimbursementStatus(Id empReID){
+        WrapperUtils.UpdateReimbursementStatus(empReID);
+    }
 }

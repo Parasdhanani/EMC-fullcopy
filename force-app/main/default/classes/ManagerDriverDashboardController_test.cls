@@ -1,6 +1,13 @@
 @isTest
 public class ManagerDriverDashboardController_test {
     public static testmethod void ManagerDriverDashboardControllerTestMethod() {
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+       List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
         RecordUtilityClass.createRecordsforManagerDriverDashboardController();
 
         Account obj_acc = RecordUtilityClass.getAccount(); // retriving the Accounts 

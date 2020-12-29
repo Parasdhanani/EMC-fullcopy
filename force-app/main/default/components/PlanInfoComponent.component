@@ -1,8 +1,10 @@
 <apex:component >
     <apex:attribute name="driverPacketDocCount" description="Size of Driver packet document" type="Integer" required="true"/>
     <apex:attribute name="insuranceDocCount" description="Size of Insurance document" type="Integer" required="true"/>
+    <apex:attribute name="mvrCheckDocCount" description="Size of MVR Check document" type="Integer" required="true"/>
     <apex:attribute name="driverPacketId" description="Size of Insurance document" type="Id" />
     <apex:attribute name="insuranceId" description="Size of Insurance document" type="Id" />
+    <apex:attribute name="mvrCheckId" description="Size of MVR Check document" type="Id" />
                 <style type="text/css">
             @media (min-width: 320px) and (max-width: 767px) {
                 .emc_new_insurance_tab_pills .plan-info-timeline {
@@ -181,7 +183,10 @@
             .plan-info-timeline .plan-new-info-timeline {
                 padding: 0px !important;
             }
-
+            .plan-info-timeline_downloadbtn{
+                    position: absolute;
+                    top: 18rem;
+            }
             
             
             .emc_new_btn_download.emc-btn-download {
@@ -212,11 +217,13 @@
                 /* mobio:hide completed div when did not attend is selected*/
             }
 
-            .sent::after {
+            /* .sent::after {
                 background-color: #FF0000 !important;
                 /*mobio:color red for sent div*/
+            
+            .schedule::after{
+                background-color: #FF0000 !important;
             }
-
             .plan-info-timeline {
                 margin-right: 135px !important;
             }
@@ -353,6 +360,9 @@
             <li class="nav-item emc_nav_tab">
                 <a class="nav-link" data-toggle="pill" ng-click="complianceCalculation()" data-target="#pills-timeline-compliance">Compliance</a>
             </li>
+            <li class="nav-item emc_nav_tab" ng-if="accid === WeiserAccID">
+                <a class="nav-link" data-toggle="pill" ng-click="mvrCheckCalculation()" data-target="#pills-timeline-mvrCheck">MVR Check</a>
+            </li>
         </ul>
         <div class="p-41">
     
@@ -400,18 +410,21 @@
                         <div class="plan-info-timeline">
                             <div class="flex-parent">
                                 <div class="input-flex-container-driver">
-                                    <div class="plan-info-input" id="scheduledsignature">
-                                        <div class="input-ring"></div>
-                                        <span data-year="Scheduled" data-info=""></span>
-                                    </div>
                                     <div class="plan-info-input" id="sentsignature">
                                         <div class="input-ring"></div>
                                         <span data-year="Sent" data-info=""></span>
                                     </div>
+                                    <div class="plan-info-input" id="scheduledsignature">
+                                        <div class="input-ring"></div>
+                                        <span data-year="Scheduled" data-info=""></span>
+                                    </div>
                                     <div class="plan-info-input" id="completedsignature">
                                         <div class="input-ring"></div>
-                                        <span data-year="Completed" data-info=""></span>
+                                        <span data-year="Attended" data-info=""></span>
                                     </div>
+                                    <!-- <div class="plan-info-input" id="completedsignature">
+                                        <span data-year="Completed" data-info=""></span>
+                                    </div> -->
                                     <div class="plan-info-input" id="didnotattendsignature">
                                         <span class="span-did-not-attend" id="span-didnotattend" data-year="Did Not Attend" data-info=""></span>
                                     </div>
@@ -442,7 +455,7 @@
     
                                 </div>
                             </div>
-                            <div class="plan-info-timeline">
+                            <div class="plan-info-timeline_downloadbtn">
                                 <a class="btn btn-secondary pull-right emc-btn-download emc_insurance_tab_pills" target="_blank" href="{!URLFOR($Action.Attachment.Download, insuranceId)}">Download</a>
                             </div>
                         </apex:outputPanel>
@@ -467,6 +480,54 @@
                         </apex:outputPanel>
                     </apex:form>
                 </div>
+
+                <div class="tab-pane" id="pills-timeline-mvrCheck">
+                    <apex:form html-ng-non-bindable="true" styleClass="pull-right">
+                        <apex:outputPanel rendered="{!mvrCheckDocCount > 0}">
+                            <div class="tab-pills-width ng-pristine ng-valid emc_insurance_tab_pills emc_insurance_tab_upload_pills">
+                                <div class="plan-info-timeline">
+                                    <div class="flex-parent">
+                                        <div class="input-flex-container">
+                                            <div class="plan-info-input" id="requested">
+                                                <div class="input-ring"></div>
+                                                <span data-year="Requested" data-info=""></span>
+                                            </div>
+                                            <div class="plan-info-input" id="uploaded">
+                                                <div class="input-ring"></div>
+                                                <span data-year="Uploaded" data-info=""></span>
+                                                <img id="image-upload" src="{!URLFOR($Resource.EmcCSS,'emc-design/assets/images/file-uploaded.png')}" alt="icon" />
+                                            </div>
+                                        </div>
+                                    </div>
+    
+                                </div>
+                            </div>
+                            <div class="plan-info-timeline_downloadbtn">
+                                <a class="btn btn-secondary pull-right emc-btn-download emc_insurance_tab_pills" target="_blank" href="{!URLFOR($Action.Attachment.Download, mvrCheckId)}">Download</a>
+                            </div>
+                        </apex:outputPanel>
+    
+                        <apex:outputPanel rendered="{!mvrCheckDocCount == 0}">
+                            <div class="tab-pills-width ng-pristine ng-valid emc_insurance_tab_pills">
+                                <div class="plan-info-timeline">
+                                    <div class="flex-parent">
+                                        <div class="input-flex-container">
+                                            <div class="plan-info-input" id="requestednotupload">
+                                                <div class="input-ring"></div>
+                                                <span data-year="Requested" data-info="" class="span-requested"></span>
+                                            </div>
+                                            <div class="plan-info-input" id="notuploaded">
+                                                <span data-year="Not Uploaded" data-info="" class="span-not-uploaded"></span>
+                                                <img id="image-not-upload" src="{!URLFOR($Resource.EmcCSS,'emc-design/assets/images/file-notuploaded.png')}" alt="icon" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:form>
+                </div>
+
                 <div class="tab-pane" id="pills-timeline-compliance">
                     <span id="drivername" class="span-drivername">{{messageofcompliance}}</span>
                     <!--<span id="drivername" ng-if="empContact[0].compliancestatus__c!=null && empContact[0].compliancestatus__c=='Yes' && compliancedata.length > 0" class="span-drivername">{{empContact[0].Name}} is Compliance, But not driving the equivalent annual 5,000-mile minimum at this time.</span>

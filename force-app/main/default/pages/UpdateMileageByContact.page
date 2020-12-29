@@ -90,7 +90,8 @@
                 {
                     
                    $('#myTable').dataTable({
-                searching: false});
+                    "pageLength": 100,
+                     searching: false});
                }
         
     </script>

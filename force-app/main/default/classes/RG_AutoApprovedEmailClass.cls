@@ -18,8 +18,7 @@ public class RG_AutoApprovedEmailClass implements Database.Batchable<sObject> {
                 obj_accountnames1.add(s);                
             }           
         }        
-        RG_InsertLastMonthReimbursement insRe = new  RG_InsertLastMonthReimbursement();
-        string lastMonth = insRe.getLastMonthValue(-1);
+        String lastMonth = Utils.fetchMonths(1, 0)[0];
         list<user> userlist;
         if(obj_accountnames1.size()>0)
         {
@@ -39,11 +38,40 @@ public class RG_AutoApprovedEmailClass implements Database.Batchable<sObject> {
         Datetime currentDate = System.now();
         if(obj_accountnames1.size()>0 && !Test.isRunningTest())
         {
-            conlist = [SELECT id,Role__c,account.Enable_Email_For_Managers__c,Deactivated_Date__c,External_Email__c,Account.Approval_Template_Message__c,Monthly_Mileage_Limit__c,name,(SELECT Role__c,id,name, Monthly_Mileage_Limit__c FROM drivers__r) FROM contact WHERE id in: cIdList AND accountid != null AND account.Enable_Email_For_Managers__c = true AND Role__c != ''  and account.Name =:obj_accountnames1 AND (Deactivated_Date__c = NULL OR Deactivated_Date__c <=: currentDate)];            
+            conlist = [SELECT id,Role__c,
+                                account.Enable_Email_For_Managers__c,
+                                Deactivated_Date__c,External_Email__c,
+                                Account.Approval_Template_Message__c,
+                                Monthly_Mileage_Limit__c,name,
+                                (SELECT Role__c,id,name,
+                                Monthly_Mileage_Limit__c 
+                                FROM drivers__r) 
+                            FROM contact 
+                            WHERE id in: cIdList 
+                                AND accountid != null 
+                                AND account.Enable_Email_For_Managers__c = true 
+                                AND Role__c != ''
+                                AND ( Driver_Type__c != 'Driver - Full Time' or Driver_Type__c != 'Driver - Part Time' )
+                                AND account.Name =:obj_accountnames1 
+                                AND (Deactivated_Date__c = NULL OR Deactivated_Date__c <=: currentDate)];            
         }
         else if(obj_accountnames1.size()==0 && !Test.isRunningTest())
         {
-           conlist = [SELECT id,Role__c,account.Enable_Email_For_Managers__c,Deactivated_Date__c,External_Email__c,Account.Approval_Template_Message__c,Monthly_Mileage_Limit__c,name,(SELECT Role__c,id,name, Monthly_Mileage_Limit__c FROM drivers__r) FROM contact WHERE id in: cIdList AND accountid != null AND account.Enable_Email_For_Managers__c = true AND Role__c != '' AND (Deactivated_Date__c = NULL OR Deactivated_Date__c <=: currentDate)];
+           conlist = [SELECT id,Role__c,
+                            account.Enable_Email_For_Managers__c,
+                            Deactivated_Date__c,External_Email__c,
+                            Account.Approval_Template_Message__c,
+                            Monthly_Mileage_Limit__c,name,
+                            (SELECT Role__c,id,name,
+                                Monthly_Mileage_Limit__c 
+                                FROM drivers__r) 
+                        FROM contact 
+                        WHERE id in: cIdList 
+                            AND accountid != null 
+                            AND account.Enable_Email_For_Managers__c = true 
+                            AND Role__c != '' 
+                            AND ( Driver_Type__c != 'Driver - Full Time' or Driver_Type__c != 'Driver - Part Time' )
+                            AND (Deactivated_Date__c = NULL OR Deactivated_Date__c <=: currentDate)];
         }
         else
         {
@@ -68,8 +96,7 @@ public class RG_AutoApprovedEmailClass implements Database.Batchable<sObject> {
             }
         }
         System.debug('cIdList==>> ' + cIdList);
-        RG_InsertLastMonthReimbursement insRe = new  RG_InsertLastMonthReimbursement();
-        string lastMonth = insRe.getLastMonthValue(-1);
+        String lastMonth = Utils.fetchMonths(1, 0)[0];
         list<contact> contactlist = [SELECT
             id, 
             Role__c, 
@@ -92,7 +119,8 @@ public class RG_AutoApprovedEmailClass implements Database.Batchable<sObject> {
         FROM
             contact
         WHERE
-            manager__c in: cIdList];
+            manager__c in: cIdList
+            AND ( Driver_Type__c != 'Driver - Full Time' or Driver_Type__c != 'Driver - Part Time' )];
         list<Employee_Reimbursement__c> reimlist = [SELECT
             id, 
             contact_id__c, 
@@ -101,7 +129,8 @@ public class RG_AutoApprovedEmailClass implements Database.Batchable<sObject> {
         FROM
             Employee_Reimbursement__c
         WHERE
-            month__c = : lastmonth AND contact_id__c in: cIdList];
+            month__c = : lastmonth AND contact_id__c in: cIdList
+            AND ( Contact_Id__r.Driver_Type__c != 'Driver - Full Time' or Contact_Id__r.Driver_Type__c != 'Driver - Part Time' )];
         list<Employee_Mileage__c> milelist = [SELECT
             Mileage__c, 
             From_Previous_Months__c, 
@@ -109,7 +138,8 @@ public class RG_AutoApprovedEmailClass implements Database.Batchable<sObject> {
         FROM
             Employee_Mileage__c
         WHERE
-            EmployeeReimbursement__r.Month__c = : lastmonth];
+            EmployeeReimbursement__r.Month__c = : lastmonth
+            AND ( EmployeeReimbursement__r.Contact_Id__r.Driver_Type__c != 'Driver - Full Time' or EmployeeReimbursement__r.Contact_Id__r.Driver_Type__c != 'Driver - Part Time' )];
         System.debug(reimlist.size() + ' contactlist==>> ' + milelist.size());
         map<id, decimal> emReimToTotalMileagemap = new  map<id, decimal>();
         map<id, Employee_Reimbursement__c> conIdToReimMap = new  map<id, Employee_Reimbursement__c>();

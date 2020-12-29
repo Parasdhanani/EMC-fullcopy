@@ -100,20 +100,22 @@
                             </tr>
                             <tr>
                                 <td>Property Damage</td>
-                                <td>${{parameters.Property_Damage__c}}</td>
+                                <td>${{parameters.Property_Damage__c | number:0}}</td>
                             </tr>
                             <tr>
                                 <td>Comprehensive</td>
-                                <td>${{parameters.Comprehensive__c}} Deductible</td>
+                                <td>${{parameters.Comprehensive__c | number:0}} Deductible</td>
                             </tr>
                             <tr>
                                 <td>Collision</td>
-                                <td>${{parameters.Collision__c}} Deductible</td>
+                                <td>${{parameters.Collision__c | number:0}} Deductible</td>
+                            </tr>
+                            <tr ng-if="accid === gpsid">
+                                <td>Umbrella Coverage</td>
+                                <td>{{parameters.Umbrella_Coverage__c}}</td>
                             </tr>
                             </tbody>
                         </table>
-                       
-                    
                 </div>
             </div>
         </div>

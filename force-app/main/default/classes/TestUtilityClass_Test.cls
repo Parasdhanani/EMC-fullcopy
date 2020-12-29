@@ -51,6 +51,11 @@ public with sharing class TestUtilityClass_Test {
         con.Monthly_Mileage_Limit__c = 0;
         insert con;
         
+        IRS_Mileage_Rate__c irsRate = new IRS_Mileage_Rate__c();
+        irsRate.year__c = '2020';
+        irsRate.IRS_Rate__c = 2.05;
+        insert irsRate;
+
         Employee_Reimbursement__c empReim = new Employee_Reimbursement__c();
         RG_InsertLastMonthReimbursement ilmr = new RG_InsertLastMonthReimbursement();
         empReim.Contact_Id__c = con.id;
@@ -59,7 +64,9 @@ public with sharing class TestUtilityClass_Test {
         empReim.MPG__c = 45;
         empReim.Approved_Date__c = null;
         empReim.Status__c='Pending';
+        empReim.Month__c = '05-2020';
         empReim.Monthly_Mileage__c = 50;
+        empReim.IRS_Mileage_Rate__c = irsRate.Id;
         empReim.Maintenance_and_Tires__c =10;
         insert empReim;
         

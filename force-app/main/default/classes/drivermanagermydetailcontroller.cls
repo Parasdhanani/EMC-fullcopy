@@ -6,15 +6,20 @@ public with sharing class drivermanagermydetailcontroller {
     public static String gaspriceforpreviosmonth {get; set;}
     public static List<contact> obj_currect_contact {get;set;}
     public static String obj_current_contact_details {get;set;}
+    public String accInsuranceList {get; set;}
+    public Integer insuranceSize {get;set;}
     public List<Attachment> obj_driver_insurance {get;set;}
     public List<Attachment> obj_driver_driverpacket {get;set;}
+    public List<Attachment>  obj_driver_driverMVR {get;set;}
     public Integer obj_attachementsize {get;set;}
     public Integer obj_driverpacket_attachementsize {get;set;}
+    public Integer obj_driverpacket_attachMVRsize {get;set;}
     public static Boolean showlastyear {get;set;}
     public static String logoDocument_id {get;set;}
     public drivermanagermydetailcontroller() {
         obj_currect_contact = new List<contact>();
         obj_current_contact_details = getDriverDetails();
+        obj_driver_driverMVR = new List<Attachment>();
         List<contact> currentDriverList = new List<contact>();
         obj_current_contact_details= getDriverDetails();
         if(obj_current_contact_details!=null)
@@ -34,6 +39,15 @@ public with sharing class drivermanagermydetailcontroller {
         obj_attachementsize = obj_driver_insurance.size();
         obj_driver_driverpacket = [SELECT id, Body, Name FROM Attachment WHERE ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%Driver_Packet%' limit 1];
         obj_driverpacket_attachementsize = obj_driver_driverpacket.size();
+        obj_driver_driverMVR = [SELECT Id, Body, Name FROM Attachment WHERE ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%MVR%' limit 1];
+        obj_driverpacket_attachMVRsize = obj_driver_driverMVR.size();
+        accInsuranceList = '[]';
+        //AI-000414
+        if(getContactid()!=''&& getAccountid()!='')
+        {
+            List<Account> accInsurances = [SELECT id,Bodily_Injury__c, Uninsured_Motorist__c, Property_Damage__c, Comprehensive__c, Collision__c,Umbrella_Coverage__c FROM account WHERE Id =: getAccountid()];
+           accInsuranceList = String.escapeSingleQuotes( JSON.serialize(accInsurances));
+        }
     }
     public static String getAccountid()
     {

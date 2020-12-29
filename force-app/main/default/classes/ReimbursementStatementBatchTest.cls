@@ -12,8 +12,12 @@ public with sharing class ReimbursementStatementBatchTest {
         objSendEmail.Name ='YearToDateReimbursementStatement'; //YearToDateReimbursementStatement
         objSendEmail.BCCEmailaddresses__c = 'tezt@gmail.com';
         objSendEmail.Send_to_Driver__c = true;
-        
         insert objSendEmail;
+        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
 
         Account obj_Account = new Account();
         obj_Account.name='Delta';

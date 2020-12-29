@@ -9,8 +9,10 @@ public  class DriverDashboardFromAdminManager
     public static String obj_current_contact_details {get;set;}
     public List<Attachment>  obj_driver_insurance {get;set;}
     public List<Attachment>  obj_driver_driverpacket {get;set;}
+    public List<Attachment>  obj_driver_driverMVR {get;set;}
     public Integer obj_attachementsize {get;set;}
     public Integer obj_driverpacket_attachementsize {get;set;}
+    public Integer obj_driverpacket_attachMVRsize {get;set;}
     public static Boolean showlastyear {get;set;}
     public static String nameofEmployee{get;set;}
     public static String emailofEmployee{get;set;}
@@ -19,9 +21,14 @@ public  class DriverDashboardFromAdminManager
         obj_currect_contact = new List<contact>();
         obj_driver_insurance = new List<Attachment>();
         obj_driver_driverpacket = new List<Attachment>();
-        
+        obj_driver_driverMVR = new List<Attachment>();
+
         obj_driver_driverpacket = [SELECT Id, Body, Name FROM Attachment WHERE ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%Driver_Packet%' limit 1];
         obj_driverpacket_attachementsize = obj_driver_driverpacket.size();
+        
+        obj_driver_driverMVR = [SELECT Id, Body, Name FROM Attachment WHERE ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%MVR%' limit 1];
+        obj_driverpacket_attachMVRsize = obj_driver_driverMVR.size();
+
         obj_current_contact_details = getDriverDetails();
         setEmployeeName();
         obj_driver_insurance = [SELECT id, Body, Name FROM Attachment WHERE id=:obj_currect_contact[0].Insurance_Attachment_Id__c limit 1];
@@ -134,9 +141,9 @@ public  class DriverDashboardFromAdminManager
     }
     public static String getDriverDetails()
     {   
-        obj_currect_contact = [SELECT id, Name, MailingPostalCode, MailingState, MailingCity, 
+        obj_currect_contact = [SELECT id, Name, MailingPostalCode, MailingState, MailingCity,Driver_Type__c, 
                                         Fixed_Amount__c, compliancestatus__c, Car_Image__c, Account.Name, Account.Logo_Document_Id__c, 
-                                        Vehicle_Type__c,Insurance_Attachment_Id__c 
+                                        Vehicle_Type__c,Insurance_Attachment_Id__c, Account.Triplog_API__c, Email 
                                     FROM Contact 
                                     WHERE id =: getDriverid()];
         return String.escapeSingleQuotes(JSON.serialize(obj_currect_contact));
@@ -153,12 +160,17 @@ public  class DriverDashboardFromAdminManager
     @RemoteAction
     public static String approveMileages(String checked,String selected,String name,String emailaddress)
     {        
+        system.debug('approveMileages');
+        system.debug('checked'+checked);
+        system.debug('selected'+selected);
+        system.debug('name'+name);
+        system.debug('emailaddress'+emailaddress);
         return WrapperUtils.approveMileagesForAdminDash(checked,selected,name,emailaddress);
     }
     @RemoteAction
     public static String getMileages(String clickedMonth,String clickedYear,String did)
     {
-         return String.escapeSingleQuotes(WrapperUtils.getMileages(clickedMonth,clickedYear,did));
+        return String.escapeSingleQuotes(WrapperUtils.getMileages(clickedMonth,clickedYear,did));
     } 
     @RemoteAction
     public static List<String> getCompliance(String did)
@@ -172,4 +184,26 @@ public  class DriverDashboardFromAdminManager
     {
         return WrapperUtils.getPacketandMeetingDetails(did);
     }   
+
+    //method is use for fatch mileages from triplog 
+    //AI-000429
+    @RemoteAction
+    public static void TripCallout(Id driverId, String month, String year, String fuel, String maintTyre, Id empReID,String mpg,String status){
+        System.debug('=='+status);
+        WrapperUtils.TripCallout(driverId,month,year,fuel,maintTyre,empReID,mpg,status);
+    }
+
+    //method is use for change reimbursement status 
+    //AI-000429
+    @RemoteAction
+    public static void UpdateReimbursementStatus(Id empReID){
+        WrapperUtils.UpdateReimbursementStatus(empReID);
+    }
+
+    //AI-000435 Method is use for concer expense triplog api
+    @RemoteAction
+    public static void postExpenseReimbursement(String empReMonth,String contactEmail,String totalReimburement){
+        system.debug('empReMonth'+empReMonth);
+        //UploadConcurQuickExpenseTriplog.postTotalReimbursement(empReMonth,contactEmail,totalReimburement);
+    }
 }

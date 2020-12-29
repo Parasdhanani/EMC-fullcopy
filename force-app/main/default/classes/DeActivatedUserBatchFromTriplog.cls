@@ -1,6 +1,6 @@
 global class DeActivatedUserBatchFromTriplog implements Database.Batchable<sObject>,Database.AllowsCallouts, Database.Stateful {
     String query;
-    private static final String User_Deactivate = System.Label.User_Deactivate_End_Point;
+    private static final String MLOGACCOUNT = System.Label.Triplog_New_URL;
     private static Http uHttp;
     private static HttpRequest uRequest;
     private static HttpResponse uResponse;
@@ -73,13 +73,13 @@ global class DeActivatedUserBatchFromTriplog implements Database.Batchable<sObje
 
     webservice static void deactivateUserTriplog(String apiToken, Contact contactRecord) {
         try {
-            String dbody;
-            dbody = '{"disabled": true}';
+            String dbody = '{"disabled": true}';
+            String baseURL = !MLOGACCOUNT.Contains(apiToken) ? StaticValues.TRIPLOG_BASEURL : StaticValues.MLOG_BASEURL;
             if(contactRecord.Triplog_UserID__c != null && contactRecord.IsDeactivated__c == false) {
                 uHttp = new Http();
                 uRequest = new HttpRequest();
                 uResponse = new HttpResponse();
-                uRequest.setEndpoint(User_Deactivate.trim() + '/' + contactRecord.Triplog_UserID__c);
+                uRequest.setEndpoint(baseURL + StaticValues.DEACTIVATE_USER_SUFFIX +  '/' + contactRecord.Triplog_UserID__c);
                 uRequest.setMethod('PUT');     
                 uRequest.setBody(dbody);
                 uRequest.setTimeout(120000);

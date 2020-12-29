@@ -115,8 +115,12 @@ global class DeActivatedUserBatch implements Database.Batchable<sObject>,Databas
                 reimbursementList.add(getReimbursement(currentContact,0,fuelPrice,''));
                 System.debug('reimbursementListnot'+reimbursementList);
             }
+            else if((existingReimbursementMap.containsKey(currentContact.Name+':' + currentMonth(0))))
+            {
+                //if current month reimbursement available then get it and update
+                reimbursementListtoUpdate.add(getReimbursement(currentContact,0,fuelPrice,existingReimbursementMap.get(currentContact.Name+':' + currentMonth(0)).id));
+            }
         }
-       
     }
     global void finish(Database.BatchableContext BC) 
     {
@@ -172,6 +176,7 @@ global class DeActivatedUserBatch implements Database.Batchable<sObject>,Databas
         currentReimbursement.Month__c = currentMonth(monthValue);
         currentReimbursement.Maintenance_and_Tires__c = currentContact.Maintenance_and_Tires__c;
         currentReimbursement.MPG__c = currentContact.MPG__c;
+        currentReimbursement.Fixed_Amount__c = currentContact.Fixed_Amount__c; 
         currentReimbursement.Approved_Date__c = null;
         if(monthValue ==0)
         {

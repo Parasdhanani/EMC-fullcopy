@@ -1,6 +1,13 @@
 @isTest
 public class DriverDashboardFromAdminManager_Test {
     public static testmethod void driverDashboardFromAdminManagertestMethod() {
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+       List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
         RecordUtilityClass.createRecordsforDriverDashboardFromAdminManager();
         Account obj_acc = RecordUtilityClass.getAccount(); // retriving the Accounts 
         Contact obj_admin_contact = RecordUtilityClass.getAdminContact(); // Retriving the Admin with limit 1
@@ -28,6 +35,7 @@ public class DriverDashboardFromAdminManager_Test {
         List<Employee_Reimbursement__c> obj_Employee_Reimbursement_List = RecordUtilityClass.getDriverEmployee_Reimbursement(obj_driver_contact.id);
         List<EmployeeReimbursements> obj_list =  RecordUtilityClass.getEmployeeReimbursements(obj_Employee_Reimbursement_List);
         DriverDashboardFromAdminManager.approveReimbursements('2019',obj_driver_contact.Id,obj_acc.Id,JSON.serialize(obj_list));
+        DriverDashboardFromAdminManager.postExpenseReimbursement('04-2020','abc@gmail.com','222');
         
         List<Employee_Mileage__c> obj_list_mileages =  RecordUtilityClass.getMileagesList();
         List<EmployeeMileages> obj_EmployeeMileages_list1=new List<EmployeeMileages>();

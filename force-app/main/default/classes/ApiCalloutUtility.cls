@@ -24,18 +24,25 @@ public class ApiCalloutUtility
 	{
 		Http h = new Http();
 		HttpRequest req = new HttpRequest();
-		req.setHeader('Authorization', 'apikey ' + apiKey);
+		
+		if(resourceName == 'HeaderBasic'){
+			req.setHeader('Authorization', 'Basic ' + apiKey);
+		} else {
+			req.setHeader('Authorization', 'apikey ' + apiKey);
+		}
+		req.setHeader('Content-Type', 'application/json');
 		req.setTimeout(120000);
 		req.setMethod(method);
 		if(method=='GET')
 		{
 			endPoint = endPoint+resourceName;
 		}
-		else if(method=='POST' ||method=='PUT')
+		else if(method=='POST' ||method=='PUT' || method == 'DELETE')
 		{
 			req.setBody(body);    
 		}
 		req.setEndpoint(endPoint);
+		system.debug('req'+req);
 		return h.send(req);
 	}	
 }

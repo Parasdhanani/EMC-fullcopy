@@ -1,112 +1,165 @@
-Trigger MappingGasPriceTrigger on Employee_Mileage__c (before insert, before update) {
+Trigger MappingGasPriceTrigger on Employee_Mileage__c (before insert, before update, after insert,after update) {
     
     TriggerConfig__c customSetting = TriggerConfig__c.getInstance('Defaulttrigger');
     system.debug('inside trigger');
    
-    if((Trigger.isInsert)&&(Trigger.isBefore) && customSetting.MappingGasPriceTrigger__c == true)
+    if( Trigger.isInsert && Trigger.isBefore && customSetting.MappingGasPriceTrigger__c)
     {
-        Set<String> reimbursementSet = new Set<String>();
-        Set<String> cityStateDate = new Set<String>();
+        Set<String> reimIds = new Set<String>();
         Map<String,Decimal> reimbursementWiseFuelMap = new Map<String,Decimal>();
         Map<String,Decimal> gasPriceFuelMap = new Map<String,Decimal>();
         Map<String,String> reimbursementWiseMonthMap = new Map<String,String>();
-        Map<String,String> reimbursementWiseStateCityMap = new Map<String,String>();
-        for(Employee_Mileage__c currentMileage : Trigger.New)
+        Map<String,String> reimWiseStateCityMap = new Map<String,String>();
+        for(Employee_Mileage__c mil : Trigger.New)
         {
-            reimbursementSet.add(currentMileage.EmployeeReimbursement__c);                    
+            reimIds.add(mil.EmployeeReimbursement__c);                    
         }
-        System.debug('reimbursementSet :----------- '+reimbursementSet);
-      
-        if(reimbursementSet.size()>0)
-        {
-            for(Employee_Reimbursement__c currentReimbursment : [Select id,Month__c,Fuel_Price__c,Contact_Id__r.MailingState,Contact_Id__r.MailingCity from Employee_Reimbursement__c where id =:reimbursementSet])
-            {
+        
+        if(!reimIds.isEmpty()) {
+            for(Employee_Reimbursement__c reim : [Select Id,
+                                                                    Month__c,
+                                                                    Fuel_Price__c,
+                                                                    Contact_Id__r.MailingState,
+                                                                    Contact_Id__r.MailingCity 
+                                                                FROM Employee_Reimbursement__c 
+                                                                WHERE Id In: reimIds]) {
                
-                if(currentReimbursment.Month__c.contains('-') && (String.isNotBlank(currentReimbursment.Contact_Id__r.MailingCity) || String.isNotBlank(currentReimbursment.Contact_Id__r.MailingState)))
+                if( reim.Month__c.contains('-') 
+                    && ( String.isNotBlank(reim.Contact_Id__r.MailingCity) || String.isNotBlank(reim.Contact_Id__r.MailingState) ) ) 
                 {
-                    reimbursementWiseStateCityMap.put(currentReimbursment.id,String.valueOf(currentReimbursment.Contact_Id__r.MailingCity)+String.valueOf(currentReimbursment.Contact_Id__r.MailingState.toUpperCase()));    
+                    reimWiseStateCityMap.put( reim.id, reim.Contact_Id__r.MailingCity + '' + reim.Contact_Id__r.MailingState.toUpperCase() );    
                 }  
-                if(currentReimbursment.Fuel_Price__c!=null && currentReimbursment.Fuel_Price__c>0)
+                if(reim.Fuel_Price__c != null && reim.Fuel_Price__c > 0 )
+                    reimbursementWiseFuelMap.put(reim.id, reim.Fuel_Price__c);
+                
+                if(String.isNotBlank(reim.Month__c))
+                    reimbursementWiseMonthMap.put(reim.Id, reim.Month__c );
+                
+            }
+
+            Set<String> cityStateDate = new Set<String>();
+            for(Employee_Mileage__c mil : Trigger.New) {
+    
+                if( mil.Trip_Date__c != null ) {
+                    String month = ( mil.Trip_Date__c.month() < 10 ? '0' : '') + mil.Trip_Date__c.month() + '-' + mil.Trip_Date__c.Year();
+
+                    if( reimbursementWiseMonthMap.containsKey(mil.EmployeeReimbursement__c) 
+                    && ( month == reimbursementWiseMonthMap.get(mil.EmployeeReimbursement__c)) 
+                    && reimbursementWiseFuelMap.containsKey(mil.EmployeeReimbursement__c))
+                    {
+                        System.debug('It have same reimbursmeent and it is setting fuel price here for Month ' + month);
+                        mil.Fuel_Price__c = reimbursementWiseFuelMap.get(mil.EmployeeReimbursement__c);
+                    }
+                    else if(reimWiseStateCityMap.containsKey(mil.EmployeeReimbursement__c) )
+                    {
+                        String stateCity = reimWiseStateCityMap.get(mil.EmployeeReimbursement__c);
+                        stateCity += mil.Trip_Date__c.Month() + '' + mil.Trip_Date__c.Year();
+                        cityStateDate.add(stateCity);
+                    } 
+                }                 
+                
+                
+            }
+
+            System.debug('cityStateDate has no of records ' + cityStateDate);
+            if(!cityStateDate.isEmpty())
+            {
+                for(Gas_Prices__c gs : [Select Id,
+                                                Fuel_Price__c,
+                                                Month_State_City__c 
+                                            FROM Gas_Prices__c 
+                                                WHERE Month_State_City__c IN: cityStateDate])
                 {
-                     reimbursementWiseFuelMap.put(currentReimbursment.id,currentReimbursment.Fuel_Price__c);
+                    gasPriceFuelMap.put( gs.Month_State_City__c, gs.Fuel_Price__c);
                 }
-                if(String.isNotBlank(currentReimbursment.Month__c))
-                {
-                    reimbursementWiseMonthMap.put(currentReimbursment.id,currentReimbursment.Month__c);
+
+                if(!gasPriceFuelMap.isEmpty()) {
+                    for(Employee_Mileage__c mil : Trigger.New) {
+                        if( mil.Trip_Date__c != null && reimWiseStateCityMap.containsKey(mil.EmployeeReimbursement__c)) {
+                            String statecity = reimWiseStateCityMap.get(mil.EmployeeReimbursement__c);
+                            System.debug('Finally Settinig Fuel price with a part of a key having state and City :- ' + statecity);
+                            statecity += mil.Trip_Date__c.Month() + '' + mil.Trip_Date__c.Year();
+                            System.debug('Added dates in to it :- ' + statecity);
+                            if( gasPriceFuelMap.containsKey(statecity) ) {
+                                System.debug('Finally it is Setting here the fuel price.');
+                                mil.Fuel_Price__c = gasPriceFuelMap.get(statecity);
+                            }
+                        } 
+                    }
                 }
                 
             }
         }
-        System.debug('reimbursementWiseStateCityMap :----------- '+reimbursementWiseStateCityMap);
-        System.debug('reimbursementWiseFuelMap :----------- '+reimbursementWiseFuelMap);
-        System.debug('reimbursementWiseMonthMap :----------- '+reimbursementWiseMonthMap);       
-        for(Employee_Mileage__c currentMileage : Trigger.New)
-        {
-            String month='';
-            if(currentMileage.Trip_Date__c!=null && currentMileage.Trip_Date__c.month()<10)
-            {
-                month = '0'+String.valueOf(currentMileage.Trip_Date__c.month())+'-'+String.valueOf(currentMileage.Trip_Date__c.Year());
-            }                 
-            else if(currentMileage.Trip_Date__c!=null)
-            {
-                month = String.valueOf(currentMileage.Trip_Date__c.month())+'-'+String.valueOf(currentMileage.Trip_Date__c.Year());
-            }
-            if(reimbursementWiseMonthMap.containsKey(currentMileage.EmployeeReimbursement__c) && (month==reimbursementWiseMonthMap.get(currentMileage.EmployeeReimbursement__c)) && reimbursementWiseFuelMap.containsKey(currentMileage.EmployeeReimbursement__c))
-            {
-                System.debug('It have same reimbursmeent and it is setting fuel price here for Month '+month);
-                currentMileage.Fuel_Price__c = reimbursementWiseFuelMap.get(currentMileage.EmployeeReimbursement__c);
-            }
-            else if(reimbursementWiseStateCityMap.containsKey(currentMileage.EmployeeReimbursement__c) && currentMileage.Trip_Date__c!=null)
-            {
-                String getStateCity = reimbursementWiseStateCityMap.get(currentMileage.EmployeeReimbursement__c);
-                System.debug('getStateCity for '+currentMileage.Trip_Date__c+' ---- State City :- '+getStateCity);
-                getStateCity= getStateCity+String.valueOf(currentMileage.Trip_Date__c.Month())+String.valueOf(currentMileage.Trip_Date__c.Year());
-                cityStateDate.add(getStateCity);
-            } 
-        }
         
-        System.debug('cityStateDate has no of records '+cityStateDate);
-        if(cityStateDate.size()>0)
-        {
-            for(Gas_Prices__c currentGasPrice : [Select id,Fuel_Price__c,Month_State_City__c from Gas_Prices__c where Month_State_City__c IN: cityStateDate])
-            {
-                gasPriceFuelMap.put(currentGasPrice.Month_State_City__c,currentGasPrice.Fuel_Price__c);
-            }
+    }
+
+    if(customSetting.MappingGasPriceTriggerUpdateConvertedDat__c){
+        if(Trigger.isInsert && Trigger.isBefore) {
+            MappingGasPriceTriggerHelper.updateConvertedDates(Trigger.new);
         }
-        System.debug('gas price records from gasPriceFuelMap '+gasPriceFuelMap.size());
-        for(Employee_Mileage__c currentMileage : Trigger.New)
-        {
-            if((currentMileage.Trip_Date__c!=null) && (reimbursementWiseStateCityMap.containsKey(currentMileage.EmployeeReimbursement__c)))
+        else if(Trigger.isBefore && Trigger.isUpdate){
+            List<Employee_Mileage__c> updateMileagesList = new List<Employee_Mileage__c>();
+            for(Employee_Mileage__c mil : Trigger.New)
             {
-                String statecity=reimbursementWiseStateCityMap.get(currentMileage.EmployeeReimbursement__c);
-                System.debug('Finally Settinig Fuel price with a part of a key having state and City :- '+statecity);
-                statecity = statecity + String.valueOf(currentMileage.Trip_Date__c.Month())+String.valueOf(currentMileage.Trip_Date__c.Year());
-                System.debug('Added dates in to it :- '+statecity);
-                if(gasPriceFuelMap.containsKey(statecity))
+                if(mil.TimeZone__c != Trigger.oldMap.get(mil.id).TimeZone__c 
+                    || mil.StartTime__c != Trigger.oldMap.get(mil.id).StartTime__c 
+                    || mil.EndTime__c != Trigger.oldMap.get(mil.id).EndTime__c)
                 {
-                    System.debug('Finally it is Setting here the fuel price.');
-                    currentMileage.Fuel_Price__c = gasPriceFuelMap.get(statecity);
+                    updateMileagesList.add(mil);
                 }
-            } 
+
+                if( (mil.Mileage__c == Trigger.oldMap.get(mil.id).Mileage__c) && (mil.Name.contains('EMP')) ) {
+                    System.debug('mil.Mileage__c'+mil.Mileage__c);
+                    System.debug('Trigger.oldMap.get(mil.id).Mileage__c'+Trigger.oldMap.get(mil.id).Mileage__c);
+                    mil.Trip_Status__c = Trigger.oldMap.get(mil.id).Trip_Status__c;
+                    mil.Approved_Date__c = Trigger.oldMap.get(mil.Id).Approved_Date__c;
+                }
+
+            }
+            if(!updateMileagesList.isEmpty())
+                MappingGasPriceTriggerHelper.updateConvertedDates(updateMileagesList);
+            
         }
     }
 
-    if(Trigger.isInsert && Trigger.isBefore) {
-        MappingGasPriceTriggerHelper.updateConvertedDates(Trigger.new);
-    }
-    else if(Trigger.isBefore && Trigger.isUpdate){
-        List<Employee_Mileage__c> updateMileagesList = new List<Employee_Mileage__c>();
-        for(Employee_Mileage__c currentMileages : Trigger.New)
-        {
-            if(currentMileages.TimeZone__c != Trigger.oldMap.get(currentMileages.id).TimeZone__c || currentMileages.StartTime__c != Trigger.oldMap.get(currentMileages.id).StartTime__c || currentMileages.EndTime__c != Trigger.oldMap.get(currentMileages.id).EndTime__c)
-            {
-                updateMileagesList.add(currentMileages);
+    if(Trigger.isAfter && Trigger.isInsert && customSetting.MappingGasStayTime__c){
+        set<Id> reimbursementIdsSet = new set<Id>();
+        List<datetime> tripList = new List<datetime>();
+        List<Employee_Mileage__c> mileageList = new List<Employee_Mileage__c>();
+        for(Employee_Mileage__c empmilege : Trigger.new) {
+            reimbursementIdsSet.add(empmilege.EmployeeReimbursement__c); 
+        }
+        System.debug('reimbursementIdsSet'+reimbursementIdsSet);
+        System.debug('StaticValues.isFirstTime===='+StaticValues.isFirstTime);
+        if(!reimbursementIdsSet.isEmpty() && StaticValues.isFirstTime){
+            StaticValues.isFirstTime = false; 
+            System.debug('StaticValues.isFirstTime'+StaticValues.isFirstTime);
+            for(AggregateResult objMileage : [SELECT MIN(ConvertedStartTime__c) 
+                                            FROM Employee_Mileage__c 
+                                            WHERE EmployeeReimbursement__c In : reimbursementIdsSet 
+                                            Group By Trip_Date__c ]){
+            tripList.add((Datetime)objMileage.get('expr0'));
+            }
+            System.debug('tripList===='+tripList);
+            for(Employee_Mileage__c objMil : [SELECT id,ConvertedStartTime__c,Stay_Time__c 
+                                                FROM Employee_Mileage__c 
+                                                WHERE (ConvertedStartTime__c In :tripList OR Mileage__c = 0)
+                                                AND EmployeeReimbursement__c In : reimbursementIdsSet
+                                                Order By Stay_Time__c]){
+                objMil.Stay_Time__c = 0;
+                mileageList.add(objMil);
+            }
+            System.debug('mileageList===='+mileageList);
+            If(!mileageList.isEmpty()){
+                update mileageList;
             }
         }
-        if(updateMileagesList.size()>0)
-        {
-            MappingGasPriceTriggerHelper.updateConvertedDates(updateMileagesList);
-        }
     }
-   
+
+    if(Trigger.isUpdate && Trigger.isAfter && checkRecursive.runOnce()) {
+        System.debug('inside after update');
+        System.debug('inside old update'+Trigger.oldMap);
+        System.debug('inside new update'+Trigger.new);
+        MappingGasPriceTriggerHelper.TrackHistory(Trigger.oldMap,Trigger.new);
+    }
 }

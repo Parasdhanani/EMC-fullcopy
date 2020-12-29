@@ -14,6 +14,11 @@ public class TriplogUserIdUpdateBatchTest {
         customSetting.Send_email_from_code__c= true;
         insert customSetting;
 
+        SendEmail__c customSetting1 =  new SendEmail__c();
+        customSetting1.Name = 'TriplogUserIdUpdateBatch';
+        customSetting1.Send_email_from_code__c= true;
+        insert customSetting1;
+
         //Insert Account data Using Utility class
         Account acc = new Account();
         
@@ -31,7 +36,7 @@ public class TriplogUserIdUpdateBatchTest {
        
         //Insert Contact data 
         Contact con = new Contact();
-        con.FirstName = 'Test';
+        con.FirstName = 'Test1';
         con.LastName = 'Contact';
         con.AccountId = acc.Id;
         con.MailingStreet = 'Test Street';
@@ -71,7 +76,7 @@ public class TriplogUserIdUpdateBatchTest {
         insert con2;
 
         Map<String,Contact> contactMap = new Map<String,Contact>();
-        for(Contact currentContact : [Select id,Name,Triplog_UserID__c,External_Email__c,Deactivated_Date__c From Contact Where Account.id =: acc.Id])
+        for(Contact currentContact : [Select id,Name,FirstName,Triplog_UserID__c,External_Email__c,Deactivated_Date__c From Contact Where Account.id =: acc.Id])
         {
             contactMap.put(currentContact.External_Email__c.toLowerCase(),currentContact);
         }

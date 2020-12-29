@@ -5,6 +5,7 @@ global class GetTripfromTriplogBatchClass implements Database.Batchable<sObject>
     public Integer constructor;
     public Id accId;
     public List<Id> contactIds;  
+    global Set<Id> reimbursementIds = new Set<Id>();
     /*global GetTripfromTriplogBatchClass() 
     {
          constructor=1;
@@ -14,7 +15,6 @@ global class GetTripfromTriplogBatchClass implements Database.Batchable<sObject>
     global GetTripfromTriplogBatchClass(String trips)
     {
         List<String> obj_accountnames = new List<String>();
-       
         String querybuilding ='';
         if(System.Label.TripstobeLogged!=null)
         {
@@ -103,6 +103,7 @@ global class GetTripfromTriplogBatchClass implements Database.Batchable<sObject>
        // Integer lastMonth,lastYear;
         String lastMonthDate;
         String lastdateofmonth;
+        Boolean putCall = true;
         List<String> contactIdList = new List<String>();
 
         for(Contact currentContact : (List<Contact>) scope)
@@ -155,7 +156,8 @@ global class GetTripfromTriplogBatchClass implements Database.Batchable<sObject>
                     String reimMAT = String.valueof(reim.Maintenance_and_Tires__c) != null ? String.valueof(reim.Maintenance_and_Tires__c):'';
                     if(reim != null && con.Email != null) 
                     {
-                        GetTripCallout.GetTripCalloutForMileage(reim.id, con.Email,con.id,lastMonthDate, lastdateofmonth, reimFuel, reimMPG, reimMAT, con.Account.Triplog_API__c, TripStatus);
+                        reimbursementIds.add(reim.id);
+                        GetTripCallout.GetTripCalloutForMileage(reim.id, con.Email,con.id,lastMonthDate, lastdateofmonth, reimFuel, reimMPG, reimMAT, con.Account.Triplog_API__c, TripStatus,putCall);
                     }
                 }
             }
@@ -163,7 +165,9 @@ global class GetTripfromTriplogBatchClass implements Database.Batchable<sObject>
     }    
     global void finish(Database.BatchableContext BC) 
     {
-         
+        if(!reimbursementIds.isEmpty()){
+            Database.executeBatch(new LoadMileageLocationBatch(reimbursementIds, true ),50);
+        }
     }
     global String getLastMonthValue(Integer value) {
         String tempDate = date.today().addMonths(value).Month() + '-' + date.today().addMonths(value).Year();

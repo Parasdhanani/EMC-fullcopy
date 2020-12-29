@@ -1,25 +1,15 @@
 <apex:page showHeader="false" title="Reports" sidebar="false" controller="ReportDetailsController" action="{!getRedirected}">
      <head>
         <apex:include pageName="EMC_Common_Head"/>
-        <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
-        <script src="https://code.angularjs.org/1.4.0-beta.5/angular.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.2.61/jspdf.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
-        <!-- angular to export as excel -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/jszip.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+        <apex:include pageName="EMC_Common_Scripts" />
         <script src="{!URLFOR($Resource.modelJs)}"></script>
         <script src="{!URLFOR($Resource.dirPagination)}"></script>
-        <!-- End -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
-        <!--Start Ui select dropdown by mitul-->
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular-sanitize.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.2.61/jspdf.min.js"></script>
+        <script src="{!URLFOR($Resource.EMC_Header_Scripts,'EMC_Header_Scripts/js/angular-sanitize.js')}"></script>
         <script type="text/javascript" src="{!URLFOR($Resource.EmcCSS,'emc-design/assets/js/select.js')}"></script>
         <link rel="stylesheet" href="{!URLFOR($Resource.EmcCSS,'emc-design/assets/css/select.css')}"/>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.css"/>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.8.5/css/selectize.default.css"/>
+        <link rel="stylesheet" href="{!URLFOR($Resource.EMC_Header_Scripts,'EMC_Header_Scripts/css/select2.css')}"/>
+        <link rel="stylesheet" href="{!URLFOR($Resource.EMC_Header_Scripts,'EMC_Header_Scripts/css/selectize.default.css')}"/>
         <!--End Ui select dropdown by mitul-->
 
         <style type="text/css">
@@ -140,6 +130,9 @@
               background-repeat: no-repeat !important;
               background-position: center right calc(2.25rem / 4)!important;
               background-size: calc(2.25rem / 2) calc(2.25rem / 2)!important;
+            }
+            .expenseBtn{
+                margin-left: 16px !important;
             }
             .ui-select-search{
                 font-size:16px !important;
@@ -263,7 +256,6 @@
                 };
             });
             app.controller('ReportDetailsController',['$scope','$filter',function($scope,$filter) {
-              
                 var url_string = $(location).attr("href");
                 var url = new URL(url_string);
                 $scope.reportid = url.searchParams.get("reportid");
@@ -317,6 +309,7 @@
                     
                 })
                 $scope.report = {!obj_current_reportStr};
+                $scope.SPBSAcc = '{!($Label.SPBS_Account)}';
                 $scope.reportname = $scope.report.Name;
                 $scope.headerfields = [];
                 $scope.numericheaderarray = [];
@@ -324,6 +317,7 @@
                 $scope.reportsoql = $scope.report.Report_Soql__c;
                 $scope.reportdatetimefields = [];
                 $scope.reportdatefields = [];
+                $scope.reportdatetimetotimefields = [];
                 
                 if($scope.report.Numeric_Fields__c != undefined)
                 {
@@ -358,6 +352,17 @@
                     else
                     {
                         $scope.reportdatefields.push($scope.report.Date_Fields__c.trim());
+                    }
+                }
+                if($scope.report.Date_Time_To_Time__c!=undefined)
+                {
+                    if($scope.report.Date_Time_To_Time__c.includes(','))
+                    {
+                         $scope.reportdatetimetotimefields =  $scope.report.Date_Time_To_Time__c.split(',');
+                    }
+                    else
+                    {
+                        $scope.reportdatetimetotimefields.push($scope.report.Date_Time_To_Time__c);
                     }
                 }
                 if($scope.report.Report_Header__c!=undefined)
@@ -433,7 +438,7 @@
                        
                      }
                 }
-             
+               
                 var datetimefields = new Map();
                 for(var j = 0;j<$scope.reportdatetimefields.length;j++)
                 {
@@ -450,6 +455,15 @@
                         datefields.set($scope.reportdatefields[j],apifieldstoheader.get($scope.reportdatefields[j]));
                     }
                 }
+                var datetotimefields = new Map();
+                for(var j = 0;j<$scope.reportdatetimetotimefields.length;j++)
+                {
+                    if(apifieldstoheader.has($scope.reportdatetimetotimefields[j]))
+                    {
+                        datetotimefields.set($scope.reportdatetimetotimefields[j],apifieldstoheader.get($scope.reportdatetimetotimefields[j]));
+                    }
+                }
+
                 var temp = true;
                 if($scope.reporttype != 'Without Date Range')
                 {
@@ -457,27 +471,29 @@
                     {
                         /*set the date */
                         $scope.currentDate = new Date();
+                        
                         $scope.defaultFromDate = new Date($scope.currentDate.getFullYear(), $scope.currentDate.getMonth() -1);
-                        $scope.defaultToDate = new Date($scope.currentDate.getFullYear(), $scope.currentDate.getMonth());
+                       
+                        $scope.defaultToDate = new Date($scope.currentDate.getFullYear(), $scope.currentDate.getMonth(), 0);
+                       
                         $scope.emp.startDate = $scope.defaultFromDate;
                         $scope.emp.endDate =  $scope.defaultToDate;
+                       
                     }
                 }
                 else
                 {
                     temp = true;
                 }
-                 var getdataofdrivervar = "nodata";
+                var getdataofdrivervar = "nodata";
                     var getdataofmanagervar = "nodata";
                     if ($scope.driverListSelectOrNot == true) {
                         $scope.reportformanagerordriver = 'Driver';
-                        getdataofdrivervar = {!getdataofdriver
-                    };
-                }
+                        getdataofdrivervar = {!getdataofdriver}
+                    }
                 else if ($scope.managerListSelectOrNot == true) {
                         $scope.reportformanagerordriver = 'Manager';
-                        getdataofmanagervar = {!getdataofmanager
-                    };
+                        getdataofmanagervar = {!getdataofmanager};
                 }
                     if (getdataofdrivervar != "nodata") {
                         $scope.getdataofmanager = getdataofdrivervar;
@@ -501,7 +517,11 @@
                             {
                                 if(apifieldstoheader.has(key))
                                 {
-                                    if(datetimefields.has(key))
+                                    if(datetotimefields.has(key)){
+                                        $scope.timevalues = $filter('date')(new Date($scope.getdataofmanager[i][key]), "hh:mm a", 'UTC-5');
+                                        $scope.valueofkey.push(apifieldstoheader.get(key),$scope.timevalues);
+                                    }
+                                    else if(datetimefields.has(key))
                                     {
                                         $scope.datevalues= $scope.getdataofmanager[i][key].split('T')[0].split('-');
 
@@ -546,7 +566,8 @@
                         });
                         $scope.finnalArr.push($scope.finnalData);
                     });
-                   // console.log($scope.finnalArr);
+            
+                 
                 $scope.pageSize = 250;
                 $scope.currentPage = 1;
 
@@ -563,7 +584,11 @@
                             {
                                 if(apifieldstoheader.has(key))
                                 {
-                                    if(datetimefields.has(key))
+                                    if(datetotimefields.has(key)){
+                                        $scope.timevalues = $filter('date')(new Date($scope.getdataofmanager[i][key]), "hh:mm a", 'UTC-5');
+                                        $scope.valueofkey.push(apifieldstoheader.get(key),$scope.timevalues);
+                                    }
+                                   else if(datetimefields.has(key))
                                     {
                                         $scope.datevalues= getdata[key].split('T')[0].split('-');
 
@@ -605,7 +630,6 @@
 
                 $scope.relatedMileage = function(selectedManager, emp)
                 {                 
-
                     if(selectedManager==undefined)
                     {
                         selectedManager ="";
@@ -614,11 +638,9 @@
                   $('#spinner').show();
                   Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.ReportDetailsController.getAllReportSoql}',$scope.report.Report_Soql__c,$scope.report.Report_Type__c,selectedManager,emp.startDate,emp.endDate,$scope.id,$scope.accid,$scope.reportid,$scope.reportformanagerordriver,
                     function(result, event){
-
                             if(event.status && result != null)
                             {
                                $scope.$apply(function(){
-                                
                                     $scope.getdataofmanager ="nodata";
                                     $scope.getdataofmanager= JSON.parse(result);
                                     $scope.sort("Month");
@@ -638,7 +660,12 @@
                                             {
                                                 if(apifieldstoheader.has(key))
                                                 {
-                                                    if(datetimefields.has(key))
+                                                    if(datetotimefields.has(key))
+                                                    {
+                                                        $scope.timevalues = $filter('date')(new Date($scope.getdataofmanager[i][key]), "hh:mm a", 'UTC-5');
+                                                        $scope.valueofkey.push(apifieldstoheader.get(key),$scope.timevalues);
+                                                    }
+                                                   else if(datetimefields.has(key))
                                                     {
                                                         $scope.datevalues= $scope.getdataofmanager[i][key].split('T')[0].split('-');
 
@@ -681,7 +708,7 @@
                                         });
 
                                         $scope.finnalArr.push($scope.finnalData);
-                                    //    console.log($scope.finnalArr);
+                                    console.log($scope.finnalArr);
                                     });
                                 });
                                 $('#spinner').hide();
@@ -712,7 +739,7 @@
                         $scope.reverse = false;
                         previousSortKey=keyname;
                     }
-                    if(keyname === 'Name' || keyname === 'Email' || keyname === 'CoCode' || keyname === 'Manager' || keyname === 'ContactName'){
+                    if(keyname === 'Name' || keyname === 'Email' || keyname === 'CoCode' || keyname === 'Manager' || keyname === 'ContactName'|| keyname === 'E-mail' || keyname === 'MileageApprover' || keyname === 'Status'){
                         $scope.finnalArr.sort(function (a, b) {
 
                                             var nameA = (a[keyname] == null) ? '' : (a[keyname].toLowerCase()),
@@ -752,7 +779,7 @@
                                             }
                                         })
                     }
-                    if (keyname === 'TotalMileage' || keyname === 'Mileage' || keyname === 'MonthlyVariableAmount' || keyname === 'MonthlyApprovedVariableAmount' || keyname === 'TotalApprovedVariable' || keyname === 'TotalReimbursement') {
+                    if (keyname === 'TotalMileage' || keyname === 'Mileage' || keyname === 'MonthlyFixedAmount' || keyname === 'VariableAmount' || keyname === 'VariableReimbursementRate' || keyname === 'TotalMonthlyReimbursement' || keyname === 'MonthlyVariableAmount' || keyname === 'MonthlyApprovedVariableAmount' || keyname === 'TotalApprovedMiles' || keyname === 'TotalApprovedVariable' || keyname === 'TotalReimbursement') {
 
                                 $scope.finnalArr.sort(function (a, b) {
 
@@ -809,6 +836,27 @@
                 //Disable date
                 $scope.loadDatePicker = function(selectedDate) {
                     loaddatepicker(selectedDate);
+                }
+
+                // Concur Sync -->
+                $scope.submitExpense = function(){
+                    $('#spinner').show();
+                  Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.ReportDetailsController.postTotalReimbursementForAllUser}',
+                        function (result, event) {
+                            if (event.status) {
+                                $scope.$apply(function () {
+                                    toastr.success('Expense is successfully send to triplog.');
+                                });
+                                $('#spinner').hide();
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 2000);
+                            } else {
+                                toastr.error('Something went wrong');
+                            }
+
+                        }, { escape: false });
+                               
                 }
                 $scope.exportToExcel=function(){
                  
@@ -973,6 +1021,10 @@
                                             <a class="nav-link text-white" ng-show="admindriver" href="/app/admindriverdashboard?accid={{accid}}&id={{id}}&showteam={{showteam}}&admindriver=true">Dashboard</a>
                                         </li>
                                         <li class="nav-item">
+                                            <a class="nav-link text-white" ng-show="admindriver" href="/app/MileageDashboard?accid={{accid}}&id={{id}}&showteam={{showteam}}&admindriver=true">Mileage</a>
+                                            <a class="nav-link text-white" ng-show="!admindriver" href="/app/MileageDashboard?accid={{accid}}&id={{id}}&showteam={{showteam}}">Mileage</a>
+                                        </li>
+                                        <li class="nav-item">
                                             <a class="nav-link text-white" ng-show="!admindriver" href="/app/roster?accid={{accid}}&id={{id}}&showteam={{showteam}}">Drivers</a>
                                             <a class="nav-link text-white" ng-show="admindriver" href="/app/roster?accid={{accid}}&id={{id}}&showteam={{showteam}}&admindriver=true">Drivers</a>
                                         </li>
@@ -1077,8 +1129,9 @@
                                         </ui-select-no-choice>
                                 </ui-select>
                             </div>
-                            <div class="col-12 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+                            <div class="col-12 col-sm-1 col-md-1 col-lg-1 col-xl-3">
                                 <button class="btn btn-secondary" type="submit" ng-click="relatedMileage(selectedManager, emp);">Apply</button>
+                                <button ng-if="accid === SPBSAcc" class="btn btn-primary expenseBtn" ng-click="submitExpense()">Concur Sync</button>
                             </div>
                         </div>
                     </div>
@@ -1142,7 +1195,7 @@
             $(document).ready(function () {
                 var currentDate = new Date();
                 var defaultFromDate = new Date(currentDate.getFullYear(), currentDate.getMonth() -1);
-                var defaultToDate = new Date(currentDate.getFullYear(), currentDate.getMonth());
+                var defaultToDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
                 $('#adminreport-from').datepicker('setDate', defaultFromDate);
                 $('#adminreport-to').datepicker('setDate', defaultToDate);
 

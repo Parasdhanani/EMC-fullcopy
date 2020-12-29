@@ -1,0 +1,12 @@
+.accordion_table{
+width: 100%;
+border-left: 1px solid #dfdfdf;
+border-bottom: 1px solid #dfdfdf;
+font-family: Proxima Nova!important;
+}
+table tr td{
+    border: 1px solid #dfdfdf;
+}
+.content{
+    display: none;
+}

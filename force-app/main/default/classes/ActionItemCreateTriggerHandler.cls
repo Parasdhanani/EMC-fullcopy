@@ -10,7 +10,7 @@ public with sharing class ActionItemCreateTriggerHandler {
 		}
 
         List<string> actionItemFields = new List<string>();
-        actionItemFields = getAllFields('ActionItem__c');
+        actionItemFields = Utils.getAllFields('ActionItem__c');
 
         String objectName = 'ActionItem__c';
         SObjectType actType = ((SObject)(Type.forName('Schema.ActionItem__c').newInstance())).getSObjectType();
@@ -117,24 +117,9 @@ public with sharing class ActionItemCreateTriggerHandler {
             masterListMails.add(mail);
         }
 
-        if(!masterListMails.isEmpty()) 
+        if(!Test.isRunningTest() && !masterListMails.isEmpty()) 
         {           
             Messaging.sendEmail(masterListMails);
         }
     }
-
-    public static List<String> getAllFields (String sobjectname){
-        
-        Map<String, Schema.SObjectField> fields = Schema.getGlobalDescribe().get(sobjectname).getDescribe().SObjectType.getDescribe().fields.getMap();
-  
-        List<String> accessiblefields = new List<String>();
-  
-        for(Schema.SObjectField field : fields.values()){
-            if(field.getDescribe().isAccessible())
-                accessiblefields.add(field.getDescribe().getName());
-        }
-    
-        return accessiblefields;
-    }
-
 }

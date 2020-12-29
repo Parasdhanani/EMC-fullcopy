@@ -36,6 +36,8 @@ global with sharing class ReimbursementStatementBatch implements Database.Batcha
                monthList.add(String.valueOf(i)+'-'+String.valueOf(System.Today().Year()));  
             }
         }        
+        //add remove method for not consider current month.
+        monthlist.remove(monthList.size()-1);
     }
     global Database.QueryLocator start(Database.BatchableContext BC) 
     {

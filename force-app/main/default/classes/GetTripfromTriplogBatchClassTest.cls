@@ -10,10 +10,15 @@ public class GetTripfromTriplogBatchClassTest {
         customSetting.MappingGasPriceTrigger__c = true;
         insert customSetting;
         
+        SendEmailToMe__c sendEmail = new SendEmailToMe__c();
+        sendEmail.Name = 'GetTripCallOutApprovePutCall';
+		sendEmail.Send_email_to_me__c = true;
+        insert sendEmail;
+        
         Get_Trip_Date_Settings__c obj_Get_Trip_Date_Settings = new Get_Trip_Date_Settings__c();
         obj_Get_Trip_Date_Settings.Name ='Date Settings';
-        obj_Get_Trip_Date_Settings.Start_Date__c ='2019-01-01';
-        obj_Get_Trip_Date_Settings.End_Date__c ='2019-01-31';
+        obj_Get_Trip_Date_Settings.Start_Date__c ='2020-08-01';
+        obj_Get_Trip_Date_Settings.End_Date__c ='2020-08-31';
         obj_Get_Trip_Date_Settings.Last_N_Days__c ='31';
         insert obj_Get_Trip_Date_Settings;
 
@@ -47,7 +52,7 @@ public class GetTripfromTriplogBatchClassTest {
         Employee_Reimbursement__c er = new Employee_Reimbursement__c();
         er.Contact_Id__c = contact.Id;
         
-        er.month__c = '12-2018';
+        er.month__c = '09-2020';
         er.Name = contact.lastname+':'+er.month__c;
         er.Status__c = 'Pending';
         er.Fuel_Price__c = 1;  //String.valueof(er.Fuel_Price__c); // 
@@ -84,6 +89,11 @@ public class GetTripfromTriplogBatchClassTest {
         customSetting.MappingGasPriceTrigger__c = true;
         insert customSetting;
         
+        SendEmailToMe__c sendEmail = new SendEmailToMe__c();
+        sendEmail.Name = 'GetTripCallOutApprovePutCall';
+		sendEmail.Send_email_to_me__c = true;
+        insert sendEmail;
+        
         Account acc = new Account();           
         acc.Name = 'Delta account';
         acc.Triplog_API__c = '123456789';
@@ -114,7 +124,7 @@ public class GetTripfromTriplogBatchClassTest {
         Employee_Reimbursement__c er = new Employee_Reimbursement__c();
         er.Contact_Id__c = contact.Id;
         
-         er.month__c = '12-2018';
+         er.month__c = '09-2020';
         er.Name = contact.lastname+':'+er.month__c;
         er.Status__c = 'Pending';
         er.Fuel_Price__c = 1;  //String.valueof(er.Fuel_Price__c); // 
@@ -150,6 +160,11 @@ public class GetTripfromTriplogBatchClassTest {
         customSetting.MappingGasPriceTrigger__c = true;
         insert customSetting;
         
+        SendEmailToMe__c sendEmail = new SendEmailToMe__c();
+        sendEmail.Name = 'GetTripCallOutApprovePutCall';
+		sendEmail.Send_email_to_me__c = true;
+        insert sendEmail;
+         
         Account acc = new Account();           
         acc.Name = 'Delta account';
         acc.Triplog_API__c = '123456789';
@@ -180,7 +195,7 @@ public class GetTripfromTriplogBatchClassTest {
         Employee_Reimbursement__c er = new Employee_Reimbursement__c();
         er.Contact_Id__c = contact.Id;
         
-        er.month__c = '12-2018';
+        er.month__c = '09-2020';
         er.Name = contact.lastname+':'+er.month__c;
         er.Status__c = 'Pending';
         er.Fuel_Price__c = 1;  //String.valueof(er.Fuel_Price__c); // 
@@ -216,6 +231,11 @@ public class GetTripfromTriplogBatchClassTest {
         customSetting.MappingGasPriceTrigger__c = true;
         insert customSetting;
         
+        SendEmailToMe__c sendEmail = new SendEmailToMe__c();
+        sendEmail.Name = 'GetTripCallOutApprovePutCall';
+		sendEmail.Send_email_to_me__c = true;
+        insert sendEmail;
+         
         Account acc = new Account();           
         acc.Name = 'Delta account';
         acc.Triplog_API__c = '123456789';
@@ -248,7 +268,7 @@ public class GetTripfromTriplogBatchClassTest {
         Employee_Reimbursement__c er = new Employee_Reimbursement__c();
         er.Contact_Id__c = contact.Id;
         
-        er.month__c = '12-2018';
+        er.month__c = '09-2020';
         er.Name = contact.lastname+':'+er.month__c;
         er.Status__c = 'Pending';
         er.Fuel_Price__c = 1;  //String.valueof(er.Fuel_Price__c); // 

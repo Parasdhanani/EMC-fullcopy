@@ -1,7 +1,13 @@
 @isTest
 public class AdminManagerDriverDashboardCon_test {
     public static testmethod void AdminManagerDriverDashboardTestMethod() {
-       
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+       List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
         RecordUtilityClass.createRecordsAdminManagerDriverDashboardCon();
         Account obj_acc = RecordUtilityClass.getAccount(); // retriving the Accounts 
         Contact obj_admin_contact = RecordUtilityClass.getAdminContact(); // Retriving the Admin with limit 1
@@ -51,9 +57,10 @@ public class AdminManagerDriverDashboardCon_test {
         AdminManagerDriverDashboardController.getAllReimbursements('2019',obj_driver_contact.id,obj_acc.id);
        // AdminManagerDriverDashboardController.approveReimbursements(String.valueOf(Date.today().year()),obj_driver_contact.Id,obj_acc.Id,obj_driver_contact.Manager__c,JSON.serialize(empReimWrapList));
       //  AdminManagerDriverDashboardController.approveReimbursements('2019',obj_driver_contact.Id,obj_acc.Id,obj_driver_contact.Manager__c,JSON.serialize(empReimWrapList));
+        AdminManagerDriverDashboardController.getDriverGasPrice('New York','New York');
         DateTime dt = DateTime.now();
         String monthName = dt.format('MMMMMMM');
-      //  AdminManagerDriverDashboardController.approveMileages(JSON.serialize(empMileageList),String.valueOf(Date.today().year()),obj_driver_contact.Id);
+       AdminManagerDriverDashboardController.approveMileages(null,null,obj_driver_contact.Name,obj_driver_contact.Email);
       //  AdminManagerDriverDashboardController.getMileages(monthName,obj_driver_contact.Id,obj_acc.Id,obj_driver_contact.Manager__c);
         Test.stopTest();
     }

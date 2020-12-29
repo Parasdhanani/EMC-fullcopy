@@ -424,7 +424,10 @@
             width: 4vw !important;
         }
         .mr-15{
-            margin-right: 16px;
+            margin-right: 27px;
+        }
+        .mr-23{
+            margin-right: 23px;
         }
         .mr-11 {
             margin-right: 11px !important;
@@ -434,6 +437,10 @@
         }
         .appspan {
             margin-right: 7px !important;
+        }
+        .syncMileageBtn{
+            font-size: 12px !important;
+            padding: 2px 8px !important;
         }
         .btn-primary-approve {
             color: #fff !important;
@@ -515,7 +522,9 @@
             padding-top: 0px !important;
             padding-left: 1px !important;
         }
-
+        .w-10rem{	
+            width: 7rem;	
+        }
         /*admindriverdashboardfromadminmanager page css*/
 
         .admin-driver-dashboard-address h5 {

@@ -3,24 +3,15 @@
   <html lang="en">
     <head>
         <apex:include pageName="EMC_Common_Head"/>
-        <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-        <script src="https://code.angularjs.org/1.4.7/angular.js"></script>
-        <script src="https://gitcdn.github.io/bootstrap-toggle/2.1.0/js/bootstrap-toggle.min.js"></script>
-        <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.9.0.js"></script>
+        <apex:include pageName="EMC_Common_Scripts" />
         <script src="{!URLFOR($Resource.dirPagination)}"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
         <link rel="stylesheet" type="text/css" href="{!URLFOR($Resource.EmcCSS, 'emc-design/assets/css/CustomStyle.css')}" />
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
-
-        <!-- for excel download directive-->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/jszip.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
-        <!-- for complete excel download directive-->
-       
-        
-        <script>
+       <style>
+           .pad-0{
+                padding-top: 0rem;
+           }
+       </style>
+       <script>
             var app = angular.module('driveradminDashboardModule',[]);
             var MileagesofReimbursements = function (visible) {
               this.visible = visible;
@@ -50,12 +41,15 @@
                         $scope.admindriver = false;
                         $scope.admindriver = url.searchParams.get("admindriver");
                         $scope.contactname ='{!contactDataAsString}';
+                        $scope.logoID = '{!logoDocument_id}';
+                        console.log('-->',$scope.contactname);
                         if($scope.admindriver == undefined || $scope.admindriver == ''){
                             $scope.admindriver = false;
                         }
                        
                         $scope.search="";
                         $scope.years = {!Last2Years};
+                        $scope.WeiserAccID = '{!($Label.Weiser_Account)}';
                       //  console.log($scope.years);
                         $scope.years.sort(function(a,b){
                             var numA = parseInt(a),
@@ -183,6 +177,16 @@
                         };
                         /* Toaster Option Complete with clear funtion */
 
+                        $scope.timeConversion = function(number){
+                                    var time;
+                                    var hours = Math.floor(number/60);
+                                    var min = number % 60;
+                                    hours = hours < 10 ? "0" + hours : hours;
+                                    min = min < 10 ? "0" + min : min;
+                                    time = hours + ':' + min; 
+                                    //var time = (hours < 12) ? (hours-12 + ':' + min +' PM') : (hours + ':' + min +' AM');
+                                    return time;
+                           }
                         $scope.openmodal = function(clickedMonth) {
                             $scope.clickedMonth = clickedMonth; 
                          //   console.log($scope.selectedYear); 
@@ -193,15 +197,22 @@
                                    if(event.status && result != null) 
                                     {
                                         if(result != ''){
-                                            var resultdata = result.replace(/\\/g,'');
-                                            var mileageList = JSON.parse(resultdata[0]);
-                                            $scope.totalMileage = JSON.parse(resultdata[1]);
-                                            $scope.totalVariableAmount = JSON.parse(resultdata[2]);
+                                        
+                                           // var resultdata = result.replace(/\\/g,'');
+                                            var mileageList = JSON.parse(result[0]);
+                                            $scope.totalMileage = JSON.parse(result[1]);
+                                            $scope.totalVariableAmount = JSON.parse(result[2]);
+                                            angular.forEach(mileageList, function (item) {
+                                                        item.drivingtime = $scope.timeConversion(item.drivingtime);
+                                                        item.staytime = $scope.timeConversion(item.staytime);
+                                                        item.totaltime = $scope.timeConversion(item.totaltime);
+                                            })
                                             $scope.exportReimList = [];
-                                            $scope.exportReimList.push(["Contact Email", "Day Of Week","Trip Date","Start Time","End Time","Trip Origin","Trip Destination","Mileage","Tracing Style","Status","Date Submitted","Date Approved","Maint/Tires","Fuel Rate","Variable Rate","Variable Amount","Notes"]);
+                                            $scope.exportReimList.push(["Contact Email","Tracking Style","Day Of Week","Trip Date","Start Time","End Time","Trip Origin","Trip Destination","Mileage","Status","Date Submitted","Date Approved","Maint/Tires","Fuel Rate","Variable Rate","Variable Amount","Drive Time","Stay Time","Total Time","Notes","Tags"]);
                                             angular.forEach(mileageList, function (item, key) {
-                                                $scope.exportReimList.push([item.emailaddress, item.dayofweek,item.tripdate,item.starttime,item.endtime,item.origin,item.destination,item.mileage,item.tracingstyle,item.status,item.submitteddate,item.approveddate,item.maintTyre,item.fuelRate,item.variablerate,item.variableamount,item.notes]);
+                                                $scope.exportReimList.push([item.emailaddress,item.tracingstyle, item.dayofweek,item.tripdate,item.starttime,item.endtime,item.origin,item.destination,item.mileage,item.status,item.submitteddate,item.approveddate,item.maintTyre,item.fuelRate,item.variablerate,item.variableamount,item.drivingtime,item.staytime,item.totaltime,item.notes,item.tag]);
                                             });
+                                          
                                             $scope.fileName = $scope.adminname +'\'s Mileages '+$scope.FromDate;
                                             $scope.reimbursementDialog.open($scope.fileName,clickedMonth,$scope.selectedYear,mileageList,$scope.totalMileage,$scope.totalVariableAmount);
                                         }
@@ -211,10 +222,11 @@
                                             $scope.totalMileage = 0;
                                             $scope.totalVariableAmount = 0;
                                             $scope.exportReimList = [];
-                                            $scope.exportReimList.push(["Contact Email", "Day Of Week","Trip Date","Start Time","End Time","Trip Origin","Trip Destination","Mileage","Tracing Style","Status","Date Submitted","Date Approved","Maint/Tires","Fuel Rate","Variable Rate","Variable Amount","Notes"]);
+                                            $scope.exportReimList.push(["Contact Email","Tracking Style","Day Of Week","Trip Date","Start Time","End Time","Trip Origin","Trip Destination","Mileage","Status","Date Submitted","Date Approved","Maint/Tires","Fuel Rate","Variable Rate","Variable Amount","Drive Time","Stay Time","Total Time","Notes","Tags"]);
                                             angular.forEach(mileageList, function (item, key) {
-                                                $scope.exportReimList.push([item.emailaddress, item.dayofweek,item.tripdate,item.starttime,item.endtime,item.origin,item.destination,item.mileage,item.tracingstyle,item.status,item.submitteddate,item.approveddate,item.maintTyre,item.fuelRate,item.variablerate,item.variableamount,item.notes]);
+                                                $scope.exportReimList.push([item.emailaddress,item.tracingstyle, item.dayofweek,item.tripdate,item.starttime,item.endtime,item.origin,item.destination,item.mileage,item.status,item.submitteddate,item.approveddate,item.maintTyre,item.fuelRate,item.variablerate,item.variableamount,item.drivingtime,item.staytime,item.totaltime,item.notes,item.tag]);
                                             });
+                                           
                                             $scope.fileName = $scope.adminname +'\'s Mileages '+$scope.FromDate; 
                                             $scope.reimbursementDialog.open($scope.fileName,clickedMonth,$scope.selectedYear,mileageList,$scope.totalMileage,$scope.totalVariableAmount);
                                         }
@@ -562,7 +574,7 @@
                                                     },
                                                     {escape: false}
                                                 );
-                                                toastr.success("Within two weeks you will be notified of your compliance status");
+                                                toastr.success("We review and assess compliance status once a month.Your interim compliance status will not affect your reimbursement amount.");
                                                 $scope.loadDriverInsurance();
                                                 $scope.IsVisiblebtn = false;
                                                 setTimeout(function(){
@@ -1124,6 +1136,9 @@
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-12 col-xl-4 col-lg-3 mb-3 mb-sm-0 mb-md-0 mt-3 mt-sm-0 mt-md-0">
+                            <div class="col-6 col-sm-6 col-md-6 float-right" ng-if="empContact.Account === '' || empContact.Account === undefined || empContact.Account === null">
+                                <img class="img-fluid" ng-src="{{logoID}}"></img>
+                           </div>
                             <div class="col-6 col-sm-6 col-md-6 float-right" ng-if="empContact.Account.Logo_Document_Id__c != ''">
                                  <img class="img-fluid" ng-src="{{empContact[0].Account.Logo_Document_Id__c}}"></img>
                             </div>
@@ -1167,7 +1182,7 @@
                                 </div>
                                 <div id="collapseCard{{$index}}" class="collapse" role="tabpanel" aria-labelledby="Cardheading"
                                     data-parent="#accordion">
-                                    <div class="card-body">
+                                    <div class="card-body pad-0">
                                         <div class="table-responsive">
                                             <table id="driver-dashbord" class="table table-striped dt-responsive nowrap dataTable" cellspacing="0"
                                                 width="100%">
@@ -1182,7 +1197,7 @@
                                                         <th >Mileage
                                                             <span class="sort-icon pull-right" ng-show="sortKey1=='mileage'" ng-class="{'fa fa-chevron-up':reverse1,'fa fa-chevron-down':!reverse1}"></span>
                                                         </th>
-                                                        <th >Fixed + Variable<br/>Reimbursement
+                                                        <th >Fixed + Variable
                                                             <span class="sort-icon pull-right" ng-show="sortKey1=='Reimbursements'" ng-class="{'fa fa-chevron-up':reverse1,'fa fa-chevron-down':!reverse1}"> 
                                                         </span>
                                                         </th>
@@ -1213,8 +1228,10 @@
                         
                         <c:PlanInfoComponent driverPacketDocCount="{!obj_driverpacket_attachementsize}"
                                              insuranceDocCount="{!obj_attachementsize}"
+                                             mvrCheckDocCount="{!obj_driverpacket_attachMVRsize}"
                                              driverPacketId="{!If(obj_driverpacket_attachementsize > 0, obj_driver_driverpacket[0], null)}"
-                                             insuranceId="{!If(obj_attachementsize > 0, obj_driver_insurance[0], null)}" />
+                                             insuranceId="{!If(obj_attachementsize > 0, obj_driver_insurance[0], null)}" 
+                                             mvrCheckId="{!If(obj_driverpacket_attachMVRsize > 0, obj_driver_driverMVR[0], null)}" />
                     </div>
                 </div>
             </div>

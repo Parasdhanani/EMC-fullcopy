@@ -55,7 +55,6 @@ global without sharing class RosterController
     @RemoteAction
     public static ResultResponse editInlineNewEmployee(String listofemployee,String accid,String contactid)
     {
-        //System.debug(listofemployee);
         ResultResponse result = new ResultResponse();
         result.hasError = false;
         result.message = '';
@@ -66,12 +65,10 @@ global without sharing class RosterController
             query='';
             List<EmployeeDetails> employeeList = new List<EmployeeDetails>();
             employeeList = (List<EmployeeDetails>)Json.deserialize(listofemployee,List<EmployeeDetails>.class);
-            //System.debug('currentEmployee:- '+employeeList);
             List<Contact> updateEmployeeList = new List<Contact>();
             List<String> deactivatedEmployees = new List<String>();
             for(EmployeeDetails currentEmployee:employeeList)
             {
-                //System.debug('currentEmployee in for Loop :- '+currentEmployee);
                 Contact currentContact = new Contact();
                 currentContact = WrapperUtils.getContact(currentEmployee);
                
@@ -83,7 +80,6 @@ global without sharing class RosterController
             }
             if(updateEmployeeList.size()>0)
             {
-                //System.debug('Went for update :- ' +updateEmployeeList);
                  try{
                     System.debug('updateEmployeeList'+updateEmployeeList);
                     update updateEmployeeList;
@@ -94,25 +90,20 @@ global without sharing class RosterController
                     result.message = getExcetionTypes(e.getTypeName(),e.getMessage(),e.getlinenumber());
                     return result;
                 }
-               
-                
                 //result.result = getlistAllEmployees(accid,contactid);  
-                //System.debug('updated employee list :- ' +emplist);
-            
             }
-            system.debug('deactivatedEmployees.size()'+deactivatedEmployees.size());
-            system.debug('deactivatedEmployees.size()'+deactivatedEmployees);
+            
             if(deactivatedEmployees.size()>0)
             {
-                 Database.executeBatch(new DeActivatedUserBatch(deactivatedEmployees),1);
+                Database.executeBatch(new DeActivatedUserBatch(deactivatedEmployees),1);
             }
         }
         return result;
     }
 
     public static void sendExceptionMails(String message,string convertedmsg){
-        System.debug('inside email method');
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+        List<Messaging.SingleEmailMessage> massEmailMessageList = new List<Messaging.SingleEmailMessage>();
         EmailTemplate templateId = [Select id, subject, body, HTMLValue from EmailTemplate where name = 'ExceptionEmailTemplate' Limit 1];
 
         String addressLabel = Label.Test_emailAddress;
@@ -138,10 +129,10 @@ global without sharing class RosterController
         email.setTemplateID(templateId.Id); 
         email.setSubject(templateId.subject); 
         email.setPlainTextBody(bodyOftemp); 
-        if(!Test.isRunningTest()) 
-        {
-            System.debug('inside email send');
-            Messaging.SendEmailResult [] sendSinglemail = Messaging.sendEmail(new Messaging.SingleEmailMessage[] {email});
+        massEmailMessageList.add(email);
+        if(massEmailMessageList.size()>0 && !Test.IsRunningTest())
+        {                        
+            Messaging.sendEmail(massEmailMessageList);
         }
     }
 
@@ -167,12 +158,6 @@ global without sharing class RosterController
     @description editNewEmployee is used to edit Employee to the system.
     @param String employee details. 
     */
-    /**
-    @author Natavar Ghodasara
-    @date 26th Feb 2019
-    @description editNewEmployee is used to edit Employee to the system.
-    @param String employee details. 
-    */
     @RemoteAction
     public static ResultResponse manageEmployee(String addNewEmployee,String accid,String contactid)
     {
@@ -181,30 +166,24 @@ global without sharing class RosterController
         result.message = '';
 
         List<EmployeeDetails> employeeList = new List<EmployeeDetails>();
-        System.debug('employeeList:--'+addNewEmployee);
-        System.debug('employeeList:--+++'+(List<EmployeeDetails>)Json.deserialize(addNewEmployee,List<EmployeeDetails>.class));
         employeeList = (List<EmployeeDetails>)Json.deserialize(addNewEmployee,List<EmployeeDetails>.class);
-        
-        System.debug('employeeList:--'+employeeList.size());
-
+     
             if(employeeList.size() > 0) 
             {
-                system.debug('inside size check');
                 employeeList[0].accountId = accid;
                 Contact newContact = new Contact();
                 newContact = WrapperUtils.getNewContact(employeeList[0]);
               
-                if(employeeList[0].userid!=null)
+                if(employeeList[0].userid != null)
                 {
                     //update
                     newContact.id = employeeList[0].userid;
                     try
-                    {   system.debug('inside try');
+                    {   
                         update newContact;
                     }
                     catch(Exception e)
                     {
-                        system.debug('inside catch');
                         // return getExcetionTypes(e.getTypeName(),e.getMessage(),e.getlinenumber());
                         result.hasError = true;
                         result.message = getExcetionTypes(e.getTypeName(),e.getMessage(),e.getlinenumber());
@@ -365,7 +344,8 @@ global without sharing class RosterController
     @Future(callout = true)
     webservice static void postHTTPCreateNewUserTriplog(List<Id> newListContact) 
     {
-        String url = 'https://triplogmileage.com/web/api/users';
+        String MLOGACCOUNT = System.Label.Triplog_New_URL;
+        //String url = 'https://triplogmileage.com/web/api/users';
         Http h;
         HttpRequest req;
         HttpResponse res;
@@ -396,10 +376,11 @@ global without sharing class RosterController
             }
             gen.writeEndObject();
             String jsonstringconvert = gen.getAsString();
+            String baseURL = !MLOGACCOUNT.Contains(newContact.Account.Triplog_API__c) ? StaticValues.TRIPLOG_BASEURL : StaticValues.MLOG_BASEURL;
             // HTTP request
             h = new Http();
             req = new HttpRequest();
-            req.setEndpoint(url);
+            req.setEndpoint(baseURL + StaticValues.DEACTIVATE_USER_SUFFIX);
             req.setMethod('POST');
             req.setTimeout(120000);
             req.setbody(jsonstringconvert);
@@ -438,12 +419,37 @@ global without sharing class RosterController
     @RemoteAction   
     public static String getlistAllEmployees(String accid,String contactid)
     {   
+        Map<Id, Decimal> reimTotalMap = new Map<Id, Decimal>();
+        Map<Id, Decimal> mileageTotalMap = new Map<Id, Decimal>();
+        for(AggregateResult ar : [SELECT Contact_Id__c cid, AVG(Monthly_Reimbursement_Total__c) rtotal,
+                                          AVG(Total_Mileage__c) mtotal
+                                    FROM Employee_Reimbursement__c
+                                        WHERE Contact_Id__r.AccountId =: accid
+                                        AND Month__c In: getMonths(System.today().Month())
+                                        GROUP BY Contact_Id__c]) {
+            reimTotalMap.put((Id)ar.get('cid'), (Decimal) ar.get('rtotal'));
+            mileageTotalMap.put((Id)ar.get('cid'), (Decimal) ar.get('mtotal'));
+        }
        
         List<EmployeeDetails> employeeList = new List<EmployeeDetails>();
-        for(Contact currentContact:[SELECT id,Accountid,FirstName,Lastname,Email,External_Email__c,Deactivated_Date__c,Role__c,Manager__c,Manager__r.Name,MailingPostalCode,Driving_States__c,MailingState,MailingCity,Employee_ID__c,Activation_Date__c,Vehicle_Type__c,Last_Pay_Date__c,Monthly_Mileage_Limit__c,Added_Date__c,Fixed_Amount__c,compliancestatus__c,Total_Reimbursement__c,IsDeactivated__c,Monthly__c,Sage_100_ID__c,GL_Code__c,App__c,MobilePhone,Phone,Branch_Number__c,Branch_Name__c  FROM Contact WHERE Accountid=:accid]) //Branch_Number__c,Branch_Name__c 
-        {              
-            //system.debug('currentContact'+currentContact);     
-            employeeList.add(WrapperUtils.getEmployeeDetails(currentContact));
+        for(Contact currentContact:[SELECT id,Accountid,FirstName,Lastname,
+                                            Email,External_Email__c,Deactivated_Date__c,
+                                            Role__c,Manager__c,Manager__r.Name,
+                                            MailingPostalCode,Driving_States__c,
+                                            MailingState,MailingCity,Employee_ID__c,
+                                            Activation_Date__c,Vehicle_Type__c,Last_Pay_Date__c,
+                                            Monthly_Mileage_Limit__c,Added_Date__c,Fixed_Amount__c,
+                                            compliancestatus__c,Total_Reimbursement__c,IsDeactivated__c,
+                                            Monthly__c,Sage_100_ID__c,GL_Code__c,App__c,
+                                            MobilePhone,Phone,Branch_Number__c,Branch_Name__c,
+                                            Freeze__c,Driver_Type__c,Territory__c,Code__c,District__c,
+                                            Department__c,Job_Title__c,Employee_Netchex_Id__c,Dept__c,
+                                            Average_Mileage__c,Average_Reimbursement__c
+                                        FROM Contact 
+                                        WHERE Accountid=:accid]) //Branch_Number__c,Branch_Name__c 
+        {                
+            //employeeList.add(WrapperUtils.getEmployeeDetails(currentContact, reimTotalMap.get(currentContact.id), mileageTotalMap.get(currentContact.id)));
+            employeeList.add(WrapperUtils.getEmployeeDetails(currentContact, currentContact.Average_Reimbursement__c,currentContact.Average_Mileage__c));
         }
        
         return JSON.serialize(employeeList);     
@@ -459,6 +465,19 @@ global without sharing class RosterController
         }
         return JSON.serialize(roleList);     
     }
+
+    public static String getDriverType()
+    {
+        List<String> driverTypeList = new List<String>();
+        Schema.DescribeFieldResult fieldResult = Contact.Driver_Type__c.getDescribe();
+        List<Schema.PicklistEntry> pickListEntries = fieldResult.getPicklistValues();
+        for(Schema.PicklistEntry currentEntries : pickListEntries)
+        {
+            driverTypeList.add(currentEntries.getValue());
+        }
+        return JSON.serialize(driverTypeList);     
+    }
+
     public static String getDrivingStates()
     {
         List<String> drivingStateList = new List<String>();
@@ -470,9 +489,30 @@ global without sharing class RosterController
         }
         return JSON.serialize(drivingStateList);     
     }
+    public static String getJobTitle()
+    {
+        List<String> jobTitleList = new List<String>();
+        Schema.DescribeFieldResult fieldResult = Contact.Job_Title__c.getDescribe();
+        List<Schema.PicklistEntry> pickListEntries = fieldResult.getPicklistValues();
+        for(Schema.PicklistEntry currentPickListEntry : pickListEntries)
+        {
+            jobTitleList.add(currentPickListEntry.getValue());
+        }
+        return JSON.serialize(jobTitleList);     
+    }
+    public static String getDepartment()
+    {
+        List<String> departmentList = new List<String>();
+        Schema.DescribeFieldResult fieldResult = Contact.Department__c.getDescribe();
+        List<Schema.PicklistEntry> pickListEntries = fieldResult.getPicklistValues();
+        for(Schema.PicklistEntry currentPickListEntry : pickListEntries)
+        {
+            departmentList.add(currentPickListEntry.getValue());
+        }
+        return JSON.serialize(departmentList);     
+    }
     @RemoteAction
-    public Static String readFromFile(String file,String accountId) {
-        //system.debug('file'+file);
+    public static String readFromFile(String file,String accountId) {
         String headerCSV = 'Employee_ID__c,Firstname,LastName,External_Email__c,' + 
                             'Vehicle_Type__c,Role__c,MailingCity,MailingState,' + 
                             'MailingPostalCode,AccountId,Activation_Date__c,Manager__c,MobilePhone,Driving_States__c\n';
@@ -531,12 +571,9 @@ global without sharing class RosterController
                 for(String fieldName: csvFieldNames) 
                 {
                     fieldNumber = fieldNumberMap.get(fieldName);
-                    //System.debug(fieldNumber);
-                    //System.debug(fieldName);
                     if(csvRecordData.size() > fieldNumber && fieldNumber == 10 && fieldValue != null) {
 
                         string d = csvRecordData[fieldNumber];
-                        //System.debug(d);
                         string data;
 
                         Date activationDate;
@@ -560,7 +597,6 @@ global without sharing class RosterController
                     } else if( csvRecordData.size() > fieldNumber && fieldNumber == 9 && fieldValue != null ) {
                         
                         fieldValue = csvRecordData[fieldNumber].trim();
-                        //System.debug(fieldValue);
                         accountId = '';
 
                         for(Id singleId : accNameToIdMap.keySet()) {
@@ -734,7 +770,6 @@ global without sharing class RosterController
                 emailFileAttachments.add(attach2);
             }
 
-            //System.debug(attach2.getBody());
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
             string htmlBodycsv = 'Hi ' + currentuser.Contact.FirstName + ',<br/><br/>';        
             if(finalInsertContact.size() == 0) {
@@ -751,10 +786,10 @@ global without sharing class RosterController
                 htmlBodycsv += 'The system will update in 48 business hours and newly created drivers will be notified then for training.';
             }
             mail.setUseSignature(false);if(Test.isRunningTest()) {
-                    mail.setToAddresses(new String[] { 'sanket.goc@gmail.com','natavar.goc@gmail.com','minkesh.patel@getoncrm.com' });
+                    mail.setToAddresses(new String[] { 'sanket.goswami@getoncrm.com','minkesh.patel@getoncrm.com' });
                 }
                 else {
-                    mail.setToAddresses(new String[] { 'sanket.goc@gmail.com','natavar.goc@gmail.com','minkesh.patel@getoncrm.com'});//(new String[] { currentuser.contact.External_Email__c});
+                    mail.setToAddresses(new String[] { 'sanket.goswami@getoncrm.com','minkesh.patel@getoncrm.com'});//(new String[] { currentuser.contact.External_Email__c});
                 }
             mail.setSubject('New driver create using Csv');
             mail.setHtmlBody(htmlBodycsv);
@@ -762,7 +797,7 @@ global without sharing class RosterController
                 if(!emailFileAttachments.isEmpty()) {
                     mail.setFileAttachments(emailFileAttachments);
                 }
-                //System.debug(mail.getFileAttachments());
+               
                 SendEmail__c  objSendEmail1 = SendEmail__c.getValues('RG_CreateNewUserPageClass1');
 
                 if((objSendEmail1!=null) && objSendEmail1.Send_email_from_code__c==true  )
@@ -807,7 +842,6 @@ global without sharing class RosterController
                 fileErrors.add(new FileError(duplicateContact.Employee_ID__c, duplicateContact.External_Email__c ));
             }
 
-            //System.debug('duplicateContact');
             if(!fileErrors.isEmpty())
                 return resultMessage + '::Duplicate::' + String.escapeSingleQuotes(JSON.serialize(fileErrors) ); 
         }
@@ -838,6 +872,64 @@ global without sharing class RosterController
         return resultMessage;
     }
 
+    //AI-000433
+    @RemoteAction
+    public static ResultResponse massFreeze(String listofemployee,Boolean freezeProperty){
+        ResultResponse result = new ResultResponse();
+        result.hasError = false;
+        result.message = '';
+
+        List<String> contactIds = new List<String>();
+        List<Contact> conList = new List<Contact>();
+        Set<Id> UserIds = new Set<ID> ();
+        List<UserLogin> userLogins = new List<UserLogin>();
+        contactIds = (List<String>) System.JSON.deserialize(listofemployee, List<String>.class);
+        
+        for(User currentUser: [SELECT id,ContactId FROM User WHERE ContactId IN: contactIds]) {
+            UserIds.add(currentUser.Id);
+        }
+
+        for(UserLogin ulogin : [SELECT Id, IsFrozen, UserId From UserLogin Where UserId =: UserIds]){
+            if(freezeProperty == true){
+                system.debug('freezeProperty'+freezeProperty);
+                ulogin.IsFrozen = true;
+            }
+            else {
+                system.debug('freezeProperty'+freezeProperty);
+                ulogin.IsFrozen = false;
+            }
+            userLogins.add(ulogin);
+        }
+        
+        for(Contact conObj : [SELECT id,Freeze__c 
+                                        FROM Contact WHERE ID =: contactIds ]){
+            if(freezeProperty == true){
+                system.debug('freezeProperty'+freezeProperty);
+                conObj.Freeze__c = System.today();
+            }
+            else {
+                system.debug('freezeProperty'+freezeProperty);
+                conObj.Freeze__c = null;
+            }
+            conList.add(conObj);
+        }
+
+        if(userLogins.size() > 0 && conList.size() > 0)
+        {
+            try{
+                System.debug('userLogins'+userLogins);
+                System.debug('conList'+conList);
+                update userLogins;
+                update conList;
+            } catch (Exception e){
+                result.hasError = true;
+                result.message = getExcetionTypes(e.getTypeName(),e.getMessage(),e.getlinenumber());
+                return result;
+            }
+        }
+        
+        return result ;
+    }
     //Send Email to Admin
     /*public void senEmailToAdminWithCsv(List<Document> successDoc, List<Document> duplicateDoc) {
         Messaging.EmailFileAttachment attach = new Messaging.EmailFileAttachment();
@@ -896,31 +988,38 @@ global without sharing class RosterController
 
     @RemoteAction
     public static String editEmployeeDetails(String editUserID) {
-        system.debug('editEmployeeDetails');
         Contact loggedinContact = new Contact();
-        query = 'Select id,Name,FirstName,Lastname,Email,External_Email__c,Deactivated_Date__c,Role__c,Manager__c,Manager__r.Name,MailingPostalCode,Driving_States__c,MailingState,MailingCity,Employee_ID__c,Activation_Date__c,Vehicle_Type__c,Last_Pay_Date__c,Monthly_Mileage_Limit__c,Added_Date__c,Fixed_Amount__c,compliancestatus__c,Total_Reimbursement__c,IsDeactivated__c,Monthly__c,Sage_100_ID__c,GL_Code__c,App__c,MobilePhone,Phone,Branch_Name__c,Branch_Number__c from Contact where id=\''+editUserID+'\''; //
-        system.debug('query'+query);
+        query = 'Select id,Name,FirstName,Lastname,Email,External_Email__c,Deactivated_Date__c,Role__c,Manager__c,Manager__r.Name,MailingPostalCode,Driving_States__c,MailingState,MailingCity,Employee_ID__c,Activation_Date__c,Vehicle_Type__c,Last_Pay_Date__c,Monthly_Mileage_Limit__c,Added_Date__c,Fixed_Amount__c,compliancestatus__c,Total_Reimbursement__c,IsDeactivated__c,Monthly__c,Sage_100_ID__c,GL_Code__c,App__c,MobilePhone,Phone,Branch_Name__c,Branch_Number__c,Freeze__c,Driver_Type__c,Territory__c,Code__c,District__c,Department__c,Dept__c,Job_Title__c,Employee_Netchex_Id__c from Contact where id=\''+editUserID+'\''; 
         List<EmployeeDetails> employeeList = new List<EmployeeDetails>();
         List<Contact> managerlist = (List<Contact>)ExecuteQueryUtil.getRecordListFromsObject(query);
-       
         
+        Map<Id, Decimal> reimTotalMap = new Map<Id, Decimal>();
+        Map<Id, Decimal> mileageTotalMap = new Map<Id, Decimal>();
+        for(AggregateResult ar : [SELECT Contact_Id__c cid, AVG(Monthly_Reimbursement_Total__c) rtotal,
+                                          AVG(Total_Mileage__c) mtotal
+                                    FROM Employee_Reimbursement__c
+                                        WHERE Contact_Id__c =: editUserID
+                                        AND Month__c In: getMonths(System.today().Month())
+                                        GROUP BY Contact_Id__c]) {
+            reimTotalMap.put((Id)ar.get('cid'), (Decimal) ar.get('rtotal'));
+            mileageTotalMap.put((Id)ar.get('cid'), (Decimal) ar.get('mtotal'));
+        }
         for(Contact currentManager : managerlist)
         {           
-            system.debug('currentManager'+currentManager);        
-            employeeList.add(WrapperUtils.getEmployeeDetails(currentManager));
+            employeeList.add(WrapperUtils.getEmployeeDetails(currentManager, reimTotalMap.get(currentManager.id), mileageTotalMap.get(currentManager.id)));
         }
-        system.debug('employeeList'+employeeList);
         return JSON.serialize(employeeList).replace('null','""');
     }
 
     @RemoteAction
     public static String getCity(String city,String zipcode) {
-        /*Decimal zipcode = Decimal.valueOf(zip);*/
         if(city != null && city != '' && zipcode != null && zipcode != ''){
             List<Address__c> addressList  = new List<Address__c>();
-            addressList = [SELECT id,name,State__c,City__c,Abbreviation__c,ZIP_Code__c FROM Address__c WHERE City__c =: city AND ZIP_Code__c =: zipcode];
+            addressList = [SELECT id,name,State__c,City__c,Abbreviation__c,ZIP_Code__c 
+                            FROM Address__c 
+                                WHERE City__c =: city 
+                                AND ZIP_Code__c =: zipcode];
             if(addressList.size() > 0) {
-                //System.debug('obj_Address:--'+addressList);
                 return JSON.serialize(addressList); 
             }
         }
@@ -930,13 +1029,13 @@ global without sharing class RosterController
     @RemoteAction
     public static String getCountryStateCity(String zipcode)
     {
-        /*Decimal zip = Decimal.valueOf(zipcode);*/
         if(zipcode != null && zipcode != '')
         {
             List<Address__c> addressList  = new List<Address__c>();
-            addressList = [SELECT id,name,State__c,City__c,Abbreviation__c,ZIP_Code__c FROM Address__c WHERE ZIP_Code__c =: zipcode];
+            addressList = [SELECT id,name,State__c,City__c,Abbreviation__c,ZIP_Code__c 
+                            FROM Address__c 
+                                WHERE ZIP_Code__c =: zipcode];
             if(addressList.size() > 0) {
-                //System.debug('obj_Address:--'+addressList);
                 return JSON.serialize(addressList); 
             }
         }
@@ -948,18 +1047,189 @@ global without sharing class RosterController
         List<Contact> queryContactbyemailaddress = new List<Contact>();
         String query = 'Select id,FirstName,Lastname,accountid from Contact where email=\''+emailid+'\'';
         queryContactbyemailaddress = ((List<Contact>)ExecuteQueryUtil.getRecordListFromsObject(query));
-        //System.debug('queryContactbyemailaddress:- '+queryContactbyemailaddress);
         if(queryContactbyemailaddress.size()>0)
         {
-            //System.debug('getContactByEmailAddress:---'+queryContactbyemailaddress[0].id);
             return queryContactbyemailaddress[0].id;
         }
         return 'Fail';
     }
 
+    //AI-000439
+    @RemoteAction
+    public static string putHTTP(String accountID,String empEmail) {
+        String MLOGACCOUNT = System.Label.Triplog_New_URL;
+        
+        String body, apiToken;
+        List<Account> accountList = [SELECT id,Triplog_API__c  
+                                        FROM Account 
+                                            WHERE Triplog_API__c != null 
+                                            AND Id =: accountID];
+        apiToken = accountList[0].Triplog_API__c;
+
+        String baseURL = !MLOGACCOUNT.Contains(apiToken) ? StaticValues.TRIPLOG_BASEURL : StaticValues.MLOG_BASEURL;
+        String rosterURL = baseURL + StaticValues.WELCOME_SUFFIX;
+        body = '{"emails":[';
+        body = body + String.valueof(empEmail) +']}';
+        system.debug('body'+body);
+        // HttpRequest putReq = new HttpRequest();
+        // Http putHTTP = new Http();
+        // HttpResponse putRes = new HttpResponse();
+       
+        // putReq.setEndpoint(rosterURL);
+        // putReq.setMethod('PUT');                 
+        // putReq.setBody(body);
+        // putReq.setTimeout(120000);
+        // putReq.setHeader('Authorization', 'apikey ' + apiToken);
+        // putReq.setHeader('Content-Type', 'application/json');
+        
+        // if(!Test.isRunningTest()){
+        //     if(objTriplog.TriplogPut__c == true){
+        //         putRes = putHTTP.send(putReq);
+        //         system.debug('putRes'+putRes.getBody());
+        //     }
+        // }
+        String jsonSubset;
+        TriplogPutCall__c objTriplog = TriplogPutCall__c.getValues('RosterControllerPutCall');
+        try {
+            if(!Test.isRunningTest() && objTriplog.TriplogPut__c == true) {
+                HttpResponse res = ApiCalloutUtility.executeCallout(apiToken,'PUT',rosterURL,'',body);
+                Map<String,Object> jsonMap = (Map<String, Object>)JSON.deserializeUntyped(res.getBody());
+                jsonSubset = JSON.serialize(jsonMap.get('message'));
+                system.debug('jsonSubset'+jsonSubset);
+            }
+        } catch(System.CalloutException er) {
+
+        }
+        return jsonSubset;
+    }
+
+    //AI-000439
+    @RemoteAction
+    public static void putHTTPConcurConnect(String accountID,String empEmail) {
+        //String MLOGACCOUNT = System.Label.Triplog_New_URL;
+        
+        String body, apiToken;
+        List<Account> accountList = [SELECT id,Triplog_API__c  
+                                        FROM Account 
+                                            WHERE Triplog_API__c != null 
+                                            AND Id =: accountID];
+        apiToken = accountList[0].Triplog_API__c;
+
+        //String baseURL = !MLOGACCOUNT.Contains(apiToken) ? StaticValues.TRIPLOG_BASEURL : StaticValues.MLOG_BASEURL;
+        String baseURL = StaticValues.Concer_Quick_Connect;
+
+        body = '{"emails":'+ empEmail +'}';
+        System.debug('body'+body);
+        // HttpRequest putReq = new HttpRequest();
+        // Http putHTTP = new Http();
+        // HttpResponse putRes = new HttpResponse();
+    
+        // putReq.setEndpoint(baseURL);
+        // putReq.setMethod('PUT');                 
+        // putReq.setBody(body);
+        // putReq.setTimeout(120000);
+        // putReq.setHeader('Authorization', 'apikey ' + apiToken);
+        // putReq.setHeader('Content-Type', 'application/json');
+        
+        // if(!Test.isRunningTest()){
+        //     if(objTriplog.TriplogPut__c == true){
+        //         putRes = putHTTP.send(putReq);
+        //         System.debug('putRes'+putRes);
+        //     }
+        // }
+        TriplogPutCall__c objTriplog = TriplogPutCall__c.getValues('RosterControlllerputHTTPConcurConnect');
+        try {
+            if(!Test.isRunningTest() && objTriplog.TriplogPut__c == true) {
+                HttpResponse res = ApiCalloutUtility.executeCallout(apiToken,'PUT',baseURL,'',body);
+                system.debug('res'+res);
+            }
+        } catch(System.CalloutException er) {
+
+        }
+    }
+
+    @RemoteAction
+    public static String getLoginAsData(String accid) {
+        
+        List<Contact> adminContact = new List<Contact>();
+        adminContact = [SELECT id, Name, Email, Accountid,Role__c 
+                            FROM Contact 
+                            WHERE Accountid =: accid  
+                            AND (Role__c='Manager' OR Role__c='Driver/Manager' OR Role__c = 'Driver')];
+        return String.escapeSingleQuotes(JSON.serialize(adminContact));
+    }
+
+    @RemoteAction
+    public static void resetPassword(String contactID) {
+        if(contactID != null){
+            List<User> userList = new List<User>();
+            userList = [SELECT id FROM User WHERE ContactId =: contactID limit 1];
+            if(!userList.isEmpty()){
+                System.ResetPasswordResult currectUserResult = System.resetPassword(((User)(getUser(contactID))).id, true);     
+            }
+            else {
+                List<Contact> conlist = new List<Contact>();
+                conlist = [SELECT Id,name,Role__c,IsCreatedFromCommunity__c,FirstName,LastName,External_Email__c,Email 
+                            FROM Contact 
+                            WHERE id =: contactID];
+                if(conlist[0].IsCreatedFromCommunity__c != true){
+                    conlist[0].IsCreatedFromCommunity__c = true;
+                    update conlist;
+                }
+                ContactTriggerHelper.CommunityUserCreate(conlist);
+            }
+        }
+        
+    }
+    //Use for a mass reset password
+    @RemoteAction
+    public static void massResetPassword(String contactListID) {
+        System.debug('-----------'+contactListID);
+        List<String> contactIds = new List<String>();
+        contactIds = (List<String>) System.JSON.deserialize(contactListID, List<String>.class);
+        
+        if(!contactIds.isEmpty()){
+            for(String conIds : contactIds){
+                System.ResetPasswordResult currectUserResult = System.resetPassword(((User)(getUser(conIds))).id, true);   
+            }
+        }
+    }
+
+    //AI-000327
+    //This method is used to create a community user.
+    @RemoteAction
+    public static void massEnableUser(String contactListID){
+        List<String> contactIds = new List<String>();
+        List<Contact> contactList = new List<Contact>();
+        contactIds = (List<String>) System.JSON.deserialize(contactListID, List<String>.class);
+        for(Contact conObj : [SELECT Id,IsCreatedFromCommunity__c FROM Contact WHERE Id In : contactIds AND IsCreatedFromCommunity__c = false AND Deactivated_Date__c = null]){
+            conObj.IsCreatedFromCommunity__c = true ;
+            contactList.add(conObj);
+        }
+
+        if(!contactList.isEmpty()){
+            update contactList;
+        }
+    }
+
+    @RemoteAction
+    public static void MassSyncTrips(String accountId,String startDate,String endDate){
+        System.debug('startDate'+startDate+'=======endDate'+endDate+'accountId'+accountId);
+        MassSyncTrips  obj = new MassSyncTrips(accountId,startDate,endDate);
+        Database.executeBatch (obj,1);
+    }
+    public static List<String> getMonths(Integer month) {
+        List<String> monthList = new List<String>();
+        for(Integer i = 1; i < month; i++) {
+            monthList.add( ( i < 10 ? '0' : '' ) + i + '-' + system.today().year());
+        }
+
+        return monthList;
+    }
     public class ResultResponse {
         public Boolean hasError { get; set;}
         public string message { get; set;}
         public String result { get; set;}
     }
+
 }

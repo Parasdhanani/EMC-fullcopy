@@ -130,6 +130,7 @@ public class TripLogJSONClass {
         public String receipts {get;set;} 
         public String map_Z {get;set;} // in json: map
         public String trackingMethod {get;set;} 
+        public Integer stayTimeMins {get;set;} 
 
         public Trips(JSONParser parser) {
             while (parser.nextToken() != JSONToken.END_OBJECT) {
@@ -186,6 +187,8 @@ public class TripLogJSONClass {
                             map_Z = parser.getText();
                         } else if (text == 'trackingMethod') {
                             trackingMethod = parser.getText();
+                        } else if (text == 'stayTimeMins') {
+                            stayTimeMins = parser.getIntegerValue();
                         } else {
                             System.debug(LoggingLevel.WARN, 'Trips consuming unrecognized property: '+text);
                             consumeObject(parser);

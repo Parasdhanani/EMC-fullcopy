@@ -73,7 +73,7 @@ global class SendEmailToUploadonJuly Implements Schedulable {
             csvAttc.setFileName(csvname);
             csvAttc.setBody(csvBlob);
             Messaging.SingleEmailMessage email =new Messaging.SingleEmailMessage();
-            String[] toAddresses = new list<string> {'sanket.goc@gmail.com'};
+            String[] toAddresses = new list<string> {'sanket.goswami@getoncrm.com'};
             email.setSubject('Contact CSV');
             email.setToAddresses(toAddresses);
             email.setPlainTextBody('Contact CSV');

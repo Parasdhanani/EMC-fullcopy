@@ -23,9 +23,15 @@ public class RG_CreateNewUserPageClass_Test {
         customSetting.Name = 'RG_CreateNewUserPageClass';
         customSetting.Send_email_from_code__c= true;
         insert customSetting;
-
+        
+        Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
+        veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
+        veh.vehicle__c = 'Full Size Sedan';
+        veh.Year__c = '2019';
+        insert veh;
+        
         Account acc = TestUtilityClass.getTestSingleAccount();
-        acc.Vehicle_Types__c = '2016 Dodge Journey';
+        acc.Vehicle_Types__c = '2019 Full Size Sedan';
         update acc;
 
         Contact con = new Contact();
@@ -43,12 +49,13 @@ public class RG_CreateNewUserPageClass_Test {
         con.Deactivated_Date__c = Null;
         con.isCommunityUser__c = True;
         con.Role__c = 'Admin';
+        con.Vehicle_Type__c  = '2019 Full Size Sedan';
         con.Monthly_Mileage_Limit__c = 0;
         
         insert con;
      
         con.compliancestatus__c = 'No – Vehicle Value';
-        con.Vehicle_Type__c = 'HONDA';
+        con.Vehicle_Type__c = '2019 Full-Size Sedan';
 
         List<contact> conList = new List<contact>();
         conList.add(con);
@@ -63,6 +70,7 @@ public class RG_CreateNewUserPageClass_Test {
                                         email = 'atindrasinh123.goc@gmail.com',
                                         Deactivated_Date__c = date.today(),
                                         Role__c = 'Driver',
+                                        Vehicle_Type__c  = '2019 Full Size Sedan',
                                         External_Email__c = 'atindrasinh123.goc@gmail.com',
                                         Manager__c = conList[0].id);
         insert driCon;
@@ -94,24 +102,23 @@ public class RG_CreateNewUserPageClass_Test {
         documentObjThree.FolderId = [select id from folder where name = 'Shared Documents'].id;
         insert documentObjThree;
         
+        List<user> userlist = new List<user>();
         
-        List<user> userlist = [select Id,
-                                  ContactId,
-                                  Contact.Name,
-                                  LastName,
-                                  Email,
-                                  Contact.File_Number__c,
-                                  Contact.Deactivated_Date__c, 
-                                  Contact.Vehicle_Type__c,
-                                  Contact.Employee_ID__c, 
-                                  Contact.Email, 
-                                  Contact.Manager__c, 
-                                  Contact.MailingPostalCode,
-                                  Contact.Driving_States__c, 
-                                  Contact.MobilePhone,
-                                  Contact.Role__c,
-                                  IsActive FROM User WHERE ContactId =:conList[0].ID and  IsActive = true AND ContactId != NULL and accountid != null];
-
+          Profile p = [SELECT Id FROM Profile WHERE Name='Customer Community Login User - Driver']; 
+          User user = new User(Alias = 'standt', 
+                            Email='standarduser1@testorg.com', 
+                            EmailEncodingKey='UTF-8', 
+                            LastName='Testing', 
+                            LanguageLocaleKey='en_US', 
+                            LocaleSidKey='en_US', 
+                            ProfileId = p.Id, 
+                            TimeZoneSidKey='America/Los_Angeles', 
+                            UserName='standarduser2@testorg.com',
+                            Contactid = conList[0].ID,
+                            IsActive = True
+                        );
+            userlist.add(user);
+           insert userlist;
         Test.startTest();
         
           System.runAs(userlist[0]) {
@@ -127,9 +134,7 @@ public class RG_CreateNewUserPageClass_Test {
                               /*Give_Other_Admin_Access__c*/
                        FROM User 
                        WHERE Id =: UserInfo.getUserId()]  ;
-            System.debug(           userlist.get(0).Contact.External_Email__c);
-            System.debug(           userlist.get(0).contact.account.Vehicle_Types__c);
-            System.debug(           userlist.get(0).profile.Name);
+           
             RG_CreateNewUserPageClass newUser = new RG_CreateNewUserPageClass();
             Apexpages.currentpage().getparameters().put('contactId',String.valueOf(userlist.get(0).ContactId));
             newUser.uName = 'test';
@@ -140,21 +145,7 @@ public class RG_CreateNewUserPageClass_Test {
    
             newUser.selectedMultiValue = 'test';                          
             newUser.init();
-            
-            System.debug('--------ulist --' + newuser.ulist);
-            //newUser.postHTTPCreateNewUserTriplog(conListids);
-            /*String JsonMsg = JSON.serialize(newUser);
-            RestRequest req = new RestRequest(); 
-            RestResponse res = new RestResponse();
-            //Request URL
-            req.requestURI = 'https://triplogmileage.com/web/api/users';
-            //HTTP Request Type
-            req.httpMethod = 'POST';
-            req.requestBody = Blob.valueof(JsonMsg);
-            RestContext.request = req;
-            RestContext.response = res;
-            Test.setMock(HttpCalloutMock.class, new CreateNewUserCalloutMock());*/
-            
+        
             newUser.admin = true;
             
             newUser.redirect();

@@ -3,8 +3,12 @@ private class driverComplianceReportTest{
     public static testmethod void test1(){
         TriggerConfig__c customSetting =  new TriggerConfig__c();
         customSetting.Name = 'Defaulttrigger';
+        customSetting.ContactTriggersendEmailForNewContact__c = true;
+        customSetting.ContactTriCommunityReimCreate__c = true;
         customSetting.MappingGasPriceTrigger__c = true;
         insert customSetting;
+        
+        List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
         
         SendEmail__c customSetting1 =  new SendEmail__c();
         customSetting1.Name = 'Send Email For Compliance';
@@ -24,11 +28,11 @@ private class driverComplianceReportTest{
         Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
         veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
         veh.vehicle__c =  'Full-Size Sedan';
-        veh.Year__c = '2019';
+        veh.Year__c = '2020';
         insert veh;
 
         Account accs = new Account();
-        accs.Name = 'Delta';
+        accs.Name = 'SPBS';
         accs.Triplog_API__c = 'test1';
         accs.isUsingTriplog__c = true;
         accs.Motor_Vehicle_Record_Check_Document__c = true;
@@ -39,7 +43,7 @@ private class driverComplianceReportTest{
         con1.Triplog_UserID__c = 'test';
         con1.Deactivated_Date__c =  system.now();
         con1.isCommunityUser__c = true;
-        con1.Vehicle_Type__c = '2019 Full-Size Sedan';
+        con1.Vehicle_Type__c = '2020 Full-Size Sedan';
         con1.External_Email__c = 'test.patel143478@gmail.com';
         con1.IsDeactivated__c = false;
         con1.AccountId = accs.Id;
@@ -50,7 +54,7 @@ private class driverComplianceReportTest{
         Contact con = new Contact();
         con.LastName = 'test';
         con.Triplog_UserID__c = 'test';
-        con.Vehicle_Type__c = '2019 Full-Size Sedan';
+        con.Vehicle_Type__c = '2020 Full-Size Sedan';
         con.isCommunityUser__c = true;
         con.External_Email__c = 'test.patel1478@gmail.com';
         con.IsDeactivated__c = false;
@@ -64,11 +68,11 @@ private class driverComplianceReportTest{
         att.name = 'test';
         att.body = blob.valueOf('Test');
         insert att;
-
+		List<Employee_Reimbursement__c> reimList = new List<Employee_Reimbursement__c>();
         Employee_Reimbursement__c er = new Employee_Reimbursement__c();
         //er.isDriver = true;
         er.Contact_Id__c = con.Id;
-        er.month__c = '12-2018';
+        er.month__c = '12-2019';
         er.Name = con.lastname+':system.today()';
         er.Status__c = 'Approved';
         er.Fuel_Price__c = 1; 
@@ -80,11 +84,11 @@ private class driverComplianceReportTest{
         er.Fixed_Amount__c = 10.10;
         er.Triplog_Status__c = 'U';
         insert er;
-
+		reimList.add(er);
         Employee_Reimbursement__c er1 = new Employee_Reimbursement__c();
         er1.Contact_Id__c = con.Id;
         
-        er1.month__c = '01-2019';
+        er1.month__c = '01-2020';
         er1.Name = con.lastname+':system.today()';
         er1.Status__c = 'Approved';
         er1.Fuel_Price__c = 1; 
@@ -96,11 +100,11 @@ private class driverComplianceReportTest{
         er1.Fixed_Amount__c = 10.10;
         er1.Triplog_Status__c = 'U';
         insert er1;
-
+		reimList.add(er1);
         Employee_Reimbursement__c er2 = new Employee_Reimbursement__c();
         er2.Contact_Id__c = con.Id;
         
-        er2.month__c = '09-2019';
+        er2.month__c = '09-2020';
         er2.Name = con.lastname+':system.today()';
         er2.Status__c = 'Approved';
         er2.Fuel_Price__c = 1; 
@@ -138,12 +142,15 @@ private class driverComplianceReportTest{
         
         ApexPages.currentPage().getParameters().put('manid', String.valueOf(con1.Id));
         ApexPages.currentPage().getParameters().put('drid', String.valueOf(con.Id));
+        ApexPages.currentPage().getParameters().put('accId', String.valueOf(accs.Id));
         driverComplianceReport drivertest = new driverComplianceReport();
         drivertest.TotalActualReimbursements  = 10.10;
         drivertest.MaximumAllowable = 10.25;
         drivertest.AnnualTaxLiability = 25.10;
         drivertest.totalmileages  =29.10;
-        //drivertest.complianceStatus();
+        Map<String,List<Employee_Reimbursement__c>> obj_map_Employee_Reimbursement = new Map<String,List<Employee_Reimbursement__c>>();
+        obj_map_Employee_Reimbursement.put(con.Id, reimList);
+        drivertest.complianceStatus(obj_map_Employee_Reimbursement);
         //drivertest.getComplianceContacts();
     }
 }

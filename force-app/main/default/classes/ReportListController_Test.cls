@@ -11,6 +11,12 @@ public class ReportListController_Test {
         customSetting2.Name = 'Send Email For Compliance';
         customSetting2.Send_email_from_code__c= true;
         insert customSetting2;
+
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
+
         //Account
         Account acc = new Account();
         acc.Name = 'Test Account';
@@ -77,6 +83,15 @@ public class ReportListController_Test {
             driList.add(c);
         }
         insert driList;
+
+        Employee_Reimbursement__c er = new Employee_Reimbursement__c();
+        er.Contact_Id__c = driList[0].Id;
+        er.Name = 'Reimbersment Test';
+        er.Month__c = '06-2020';
+        er.Status__c = 'Pending';
+        er.Fuel_Price__c = 10.00;
+        insert er;
+
         //User
         Profile p = [SELECT Id FROM Profile WHERE Name='Customer Community Login User - Manager'];
       
@@ -88,20 +103,33 @@ public class ReportListController_Test {
         insert u;
         //Custom report
 
+        Custom_Report__c currentReport = new Custom_Report__c();
+        currentReport.Name = 'Variable Reimbursement Report';
+        currentReport.Sort_By__c = 'asc';
+        currentReport.Report_For__c = 'Frank Saverino Accessibility';
+        currentReport.Report_Category__c = 'Reimbursement Reports  ';
+        currentReport.Report_Type__c = 'Reimbursements Between 2 Dates For Month Range';
+        currentReport.Use_Manager_List__c = true;
+        currentReport.Report_Header__c = 'Month,Employee ID,Name,E-mail,Monthly Approved Variable Amount';
+        currentReport.Report_Soql__c = 'select Month__c,Contact_Id_Employee_ID__c,Contact_Id_Name__c,Contact_Id_External_Email__c,Monthly_Approved_Variable_Amount__c from Employee_Reimbursement__c where Contact_Id_Deactivated_Date__c =null';
+        currentReport.Numeric_Fields__c = 'Monthly_Approved_Variable_Amount__c';
+        currentReport.Date_Time_Fields__c = 'Contact_Id_Name__c';
+        currentReport.Date_Fields__c = 'Contact_Id_External_Email__c';
+        insert currentReport ; 
 
-        Custom_Report__c rep = new Custom_Report__c();
-        rep.Name = 'Test Productivity Report';
-        rep.Report_Category__c = 'My Custom Reports';
-        rep.Report_For__c = '';
-        rep.Report_Soql__c = 'SELECT id,Name,email from contact where Account.name=\'Test Account\'';
-        rep.Report_Type__c = '';
-        rep.Sort_By__c = 'asc';
-        rep.Sort_From__c = '2';
-        insert rep;
+        // Custom_Report__c rep = new Custom_Report__c();
+        // rep.Name = 'Test Productivity Report';
+        // rep.Report_Category__c = 'My Custom Reports';
+        // rep.Report_For__c = 'tesst';
+        // rep.Report_Soql__c = 'SELECT id,Name,email from contact where Account.name=\'Test Account\'';
+        // rep.Report_Type__c = 'test';
+        // rep.Sort_By__c = 'asc';
+        // rep.Sort_From__c = '2';
+        // insert rep;
 
         
         Report_Accessibility__c repAcc = new Report_Accessibility__c();
-        repAcc.Custom_Report__c = rep.Id;
+        repAcc.Custom_Report__c = currentReport.Id;
         repAcc.User__c = u.Id;
         insert repAcc;
 
@@ -115,6 +143,15 @@ public class ReportListController_Test {
         ReportListController.getRedirected();
         ReportListController.getAllReports();
         ReportListController.getRole();
+        ReportListController.reimbursementListModal(er.Id);
+        ReportListController.contactListModal(acc.Id);
+        String startDate = '2020-01-01';
+        String endDate = '2020-03-22';
+        ReportListController.postTimeSheetImportAPI(startDate,endDate,con.id);
+        ReportListController.postVariablePaymentAPI(startDate,con.id);
+        ReportListController.postFixedAmountAPI(startDate,con.id);
+        ReportListController.postHalfFPFullDriverAPI(startDate,endDate,con.id);
+        ReportListController.CheckStatus(1234567654,'NetchexDeleteCallout');
         Test.stopTest();
     }
 }

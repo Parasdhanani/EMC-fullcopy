@@ -102,4 +102,14 @@ public with sharing class EmployeeDetails
     public string glcode{get;set;}
     public string addedDate {get;set;}
     public boolean IsMassDeactivated{get;set;}
+    public Boolean IsMassFreeze{ get; set; }
+    public String freeze{ get; set; }
+    public string driverType {get;set;}
+    public string netchexEmployeeID {get;set;}
+    public string district {get;set;}
+    public string code {get;set;}
+    public string territory {get;set;}
+    public string jobtitle {get;set;}
+    public string department {get;set;}
+    public string deptDesign {get;set;}
 }

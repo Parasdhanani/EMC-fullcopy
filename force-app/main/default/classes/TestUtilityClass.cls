@@ -22,7 +22,7 @@ public class TestUtilityClass{
      public static Account getTestSingleAccount2(){
         Account acc = new Account();
         
-        acc.Name = 'Test Account';
+        acc.Name = 'Excelligence Learning Corporation';
         acc.BillingStreet = 'Test Street';
         acc.BillingCity = 'Test City';
         acc.BillingState = 'ON';
@@ -103,7 +103,13 @@ public class TestUtilityClass{
         return con;
      }
      public static Contact getTestSingleContact4(Account acc,Contact c) {
-       
+        
+        // Vehicle_URL_Mapping__c veh5 = new Vehicle_URL_Mapping__c();
+        // veh5.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093359.jpg';
+        // veh5.vehicle__c =  'Full-Size Sedan';
+        // veh5.Year__c = '2019';
+        // insert veh5;
+        
         Contact con = new Contact();
         
         con.FirstName = 'Test';
@@ -197,27 +203,39 @@ public class TestUtilityClass{
     }
     public static Employee_Reimbursement__c getTestEmployeeReimbursement(Contact con){
         Employee_Reimbursement__c empReim = new Employee_Reimbursement__c();
+        IRS_Mileage_Rate__c irsRate = new IRS_Mileage_Rate__c();
+        irsRate.year__c = '2020';
+        irsRate.IRS_Rate__c = 2.05;
+        insert irsRate;
+
          RG_InsertLastMonthReimbursement ilmr = new RG_InsertLastMonthReimbursement();
-        
+         
         empReim.Contact_Id__c = con.id;
         empReim.Name = 'Test';
         empReim.Fuel_Price__c = 1234;
         empReim.MPG__c = 4567;
         empReim.Month__c =  ilmr.getLastMonthValue(-3);
         empReim.Maintenance_and_Tires__c =10;
+        empReim.IRS_Mileage_Rate__c = irsRate.Id;
         insert empReim;
         return empReim;
     }
-     public static Employee_Reimbursement__c getTestEmployeeReimbursement2(Contact con){
+    public static Employee_Reimbursement__c getTestEmployeeReimbursement2(Contact con){
+        Employee_Reimbursement__c empReim = new Employee_Reimbursement__c();
+        IRS_Mileage_Rate__c irsRate = new IRS_Mileage_Rate__c();
+        irsRate.year__c = '2020';
+        irsRate.IRS_Rate__c = 2.05;
+        insert irsRate; 
+
         Employee_Reimbursement__c empReimb = new Employee_Reimbursement__c();
-        RG_InsertLastMonthReimbursement ilmr = new RG_InsertLastMonthReimbursement();
         empReimb.Contact_Id__c = con.id;
         empReimb.Name = 'Test';
         empReimb.Fuel_Price__c = 134;
         empReimb.MPG__c = 47;
         empReimb.Fixed_Amount__c = 50;
-        empReimb.Month__c =  ilmr.getLastMonthValue(0);
+        empReimb.Month__c = Utils.fetchMonths(1, 0)[0];
         empReimb.Monthly_Mileage__c = 50;
+        empReim.IRS_Mileage_Rate__c = irsRate.Id;
         empReimb.Approved_Date__c = System.today() - 10;
         empReimb.Maintenance_and_Tires__c =10;
         empReimb.Status__c='Approved';
@@ -270,7 +288,7 @@ public class TestUtilityClass{
         insert empReim;
         return empReim;
     }
-     public static Employee_Mileage__c getTestEmployeeMileage(Employee_Reimbursement__c emp){
+    public static Employee_Mileage__c getTestEmployeeMileage(Employee_Reimbursement__c emp){
         Employee_Mileage__c empMile  = new Employee_Mileage__c();
         
         empMile.Name = 'Test';

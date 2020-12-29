@@ -54,7 +54,7 @@ global class RG_CreateNewUserPageClass {
     public String contactDataAsString,fieldValue;
     public Date fieldDate;
     public Integer fieldNumber;
-    public static String url = 'https://triplogmileage.com/web/api/users';
+    private static final String MLOGACCOUNT = System.Label.Triplog_New_URL;
     private static String apiKey;
     private String accountid;
     public List<Document> sampleDoc {get; set;}
@@ -748,10 +748,11 @@ global class RG_CreateNewUserPageClass {
             }
             gen.writeEndObject();
             String jsonstringconvert = gen.getAsString();
+            String baseURL = !MLOGACCOUNT.Contains(newContact.Account.Triplog_API__c) ? StaticValues.TRIPLOG_BASEURL : StaticValues.MLOG_BASEURL;
             // HTTP request
             h = new Http();
             req = new HttpRequest();
-            req.setEndpoint(url);
+            req.setEndpoint(baseURL + StaticValues.DEACTIVATE_USER_SUFFIX);
             req.setMethod('POST');
             req.setTimeout(120000);
             req.setbody(jsonstringconvert);

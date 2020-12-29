@@ -1,0 +1,41 @@
+<template>
+    <table>
+        <tbody style="width: 100%;">
+            <tr>
+                <td style="width: 5vw;"><label class="slds-form-element__label" for="startdate">Date</label></td>
+                <td style="width: 180px;
+                padding-left: 4px;
+                padding-right: 5px;">
+                    <lightning-input type="date" name="input1" onchange={changeHandler} value={startDate}
+                        date-style="short">
+                    </lightning-input>
+                </td>
+                <td style="padding-left: 10px;
+                text-align: right;
+                padding-right: 10px;"><label class="slds-form-element__label" for="startdate">to</label></td>
+                <td style="width: 180px;
+                padding-right: 5px;
+                padding-left: 4px;
+                ">
+                    <lightning-input class="" type="date" name="input2" value={endDate} onchange={changeEndDateHandler}
+                        date-style="short">
+                    </lightning-input>
+                </td>
+            </tr>
+        </tbody>
+
+    </table>
+    <!-- <div class="slds-size_1-of-1 slds-size_2-of-4">
+        <label class="slds-form-element__label" for="startdate">Date</label>
+        <lightning-input class="fromdateStyle" type="date" name="input1"
+            onchange={changeHandler} value={startDate} date-style="short">
+        </lightning-input>
+    </div>
+    <div class="slds-size_1-of-1 slds-size_2-of-4 slds-float_right">
+        <label class="slds-form-element__label p-27" for="startdate">to</label>
+        <lightning-input class="todateStyle" type="date" name="input2"
+         value={endDate}
+            onchange={changeEndDateHandler} date-style="short">
+        </lightning-input>
+    </div> -->
+</template>

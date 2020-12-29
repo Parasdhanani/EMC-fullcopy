@@ -23,18 +23,38 @@ global class SendEmailForSubmittedMileage implements Database.Batchable<sObject>
         owea = [SELECT Id FROM OrgWideEmailAddress WHERE Address =:'driverservices@mburse.com'];
         Date todayDate = System.today();
         if(!Test.isRunningTest()) {
-            obj_contact_list = [select Id, Role__c, Deactivated_Date__c, External_Email__c, FirstName FROM Contact WHERE (Role__c ='Driver' OR Role__c = 'Driver/Manager' OR Role__c =: StaticValues.roleAdminDriver) AND ( Deactivated_Date__c >:todayDate OR Deactivated_Date__c =:Null) and (Account.name IN: obj_accountnames) and Send_Email_For_Submitted_Mileage__c=:true];
+            obj_contact_list = [SELECT Id, Role__c, Deactivated_Date__c,
+                                        External_Email__c, FirstName 
+                                    FROM Contact 
+                                    WHERE (Role__c ='Driver' 
+                                            OR Role__c = 'Driver/Manager' 
+                                            OR Role__c =: StaticValues.roleAdminDriver) 
+                                        AND ( Deactivated_Date__c >:todayDate 
+                                            OR Deactivated_Date__c =:Null) 
+                                        AND (Account.name IN: obj_accountnames) 
+                                        AND Send_Email_For_Submitted_Mileage__c=:true 
+                                        AND (Driver_Type__c != 'Driver - Full Time' 
+                                        OR Driver_Type__c != 'Driver - Part Time') ];
         } else {
-            obj_contact_list = [select Id, Role__c, Deactivated_Date__c, External_Email__c, FirstName FROM Contact WHERE (Role__c ='Driver' OR Role__c = 'Driver/Manager' OR Role__c =: StaticValues.roleAdminDriver) AND ( Deactivated_Date__c >:todayDate OR Deactivated_Date__c =:Null) and (Account.name IN: obj_accountnames) LIMIT 1];
+            obj_contact_list = [SELECT Id, Role__c, Deactivated_Date__c,
+                                        External_Email__c, FirstName 
+                                    FROM Contact 
+                                    WHERE (Role__c ='Driver' 
+                                            OR Role__c = 'Driver/Manager'
+                                            OR Role__c =: StaticValues.roleAdminDriver)
+                                        AND ( Deactivated_Date__c >:todayDate 
+                                            OR Deactivated_Date__c =:Null) 
+                                        AND (Account.name IN: obj_accountnames) LIMIT 1];
         }
         for(Contact c : obj_contact_list) {
             conIds.add(c.Id);
         }
-        RG_InsertLastMonthReimbursement insRe = new  RG_InsertLastMonthReimbursement();
-        String lastMonth = insRe.getLastMonthValue(-1);
+        /*RG_InsertLastMonthReimbursement insRe = new  RG_InsertLastMonthReimbursement();
+        String lastMonth = insRe.getLastMonthValue(-1);*/
+        String lastMonth = Utils.fetchMonths(1, 0)[0];
         List<Employee_Reimbursement__c> empReimList = [SELECT Id, Name, Month__c, Contact_Id__c, Total_Mileage__c 
                                                             FROM Employee_Reimbursement__c 
-                                                            WHERE Month__c =: lastMonth AND Contact_Id__c IN: conIds];
+                                                            WHERE Month__c =: lastMonth AND Contact_Id__c IN: conIds AND Total_Mileage__c > 0];
         for(Employee_Reimbursement__c empReim : empReimList) {
             contactToEmpReimMap.put(empReim.Contact_Id__c, empReim);
         }
@@ -70,22 +90,18 @@ global class SendEmailForSubmittedMileage implements Database.Batchable<sObject>
                 List<String> address = new List<String>();
                 if(objSendEmailToMe.Send_email_to_me__c == true)
                 {
-                    //address.add('priyanka.goc@gmail.com');
-                    address.add('natavar.goc@gmail.com');
-                    mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','driverservices@mburse.com','sanket.goc@gmail.com'});                    
+                    address.add('minkeshp@askemc.com');
+                    mail.setBCCAddresses(new string[]{'driverservices@mburse.com'});                    
                 }
                 else
                 {
                     address.add(c.External_Email__c);
-                    mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','natavar.goc@gmail.com','driverservices@mburse.com','sanket.goc@gmail.com'});
+                    mail.setBCCAddresses(new string[]{'minkeshp@askemc.com','driverservices@mburse.com'});
                 }                
                 
                 mail.setToAddresses(address);
                 
-               /* List<String> address = new List<String>();
-                address.add('natavar.goc@gmail.com');
-                address.add('priyanka.goc@gmail.com');
-                mail.setToAddresses(address);*/
+              
                 mail.setSubject(mon + ' Submitted mileage');
                 htmlbody = emailTemplate[0].HTMLValue;
                 if(owea.size()>0) {
@@ -98,9 +114,7 @@ global class SendEmailForSubmittedMileage implements Database.Batchable<sObject>
                 htmlbody = htmlbody.replace('{!Total_Mileage}', String.valueOf(contactToEmpReimMap.get(c.Id).Total_Mileage__c));
                 mail.setPlainTextBody(htmlbody);
                 mail.setHtmlBody(htmlbody);
-                //List<String> bccaddress = new list<String>();
-                //bccaddress.add('driverservices@mburse.com');
-                //mail.setBccAddresses(bccaddress);
+                
                 mail_list.add(mail);
             }
         }

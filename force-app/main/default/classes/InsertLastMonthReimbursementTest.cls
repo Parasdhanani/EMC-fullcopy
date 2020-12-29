@@ -8,6 +8,11 @@ public class InsertLastMonthReimbursementTest {
         customSetting1.Name = 'Send Email For Compliance';
         customSetting1.Send_email_from_code__c= true;
         insert customSetting1;
+        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
 
         Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
         veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
@@ -54,8 +59,13 @@ public class InsertLastMonthReimbursementTest {
         customSetting1.Name = 'Send Email For Compliance';
         customSetting1.Send_email_from_code__c= true;
         insert customSetting1;
-
-         Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
+        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
+        
+        Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
         veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
         veh.vehicle__c =  'Full-Size Sedan';
         veh.Year__c = '2019';
@@ -101,8 +111,13 @@ public class InsertLastMonthReimbursementTest {
         customSetting1.Name = 'Send Email For Compliance';
         customSetting1.Send_email_from_code__c= true;
         insert customSetting1;
-
-         Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
+        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
+        
+        Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
         veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
         veh.vehicle__c =  'Full-Size Sedan';
         veh.Year__c = '2019';
@@ -148,8 +163,13 @@ public class InsertLastMonthReimbursementTest {
         customSetting1.Name = 'Send Email For Compliance';
         customSetting1.Send_email_from_code__c= true;
         insert customSetting1;
-
-         Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
+        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
+        
+        Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
         veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
         veh.vehicle__c =  'Full-Size Sedan';
         veh.Year__c = '2019';

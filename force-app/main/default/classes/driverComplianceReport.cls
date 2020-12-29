@@ -6,18 +6,25 @@ public with sharing class driverComplianceReport
     public Double MaximumAllowable{get;set;}
     public Double AnnualTaxLiability{get;set;}
     public Decimal totalmileages  {get;set;}
-
+    String accountId;
     public List<wrapperTaxReport> obj_wrapperTaxReport {get;set;}
     public List<String> listofmonths {get;set;}
 
     public List<IRS_Mileage_Rate__c> irsrate {get;set;}
     public Map<String,Double> obj_irsrate {get;set;}
     public Map<String,Contact> obj_contact_map{get;set;}
-     
+    public String xlsHeader{
+        get{
+            String strHeader = '';
+            strHeader += '<?xml version="1.0" encoding="UTF-8"?>';
+            strHeader += '<?mso-application progid="Excel.Sheet"?>';
+            return strHeader;
+        }
+    }
     public driverComplianceReport() 
     {
         
-        
+        accountId = ApexPages.currentPage().getParameters().get('accId');
         List<String> obj_date = Label.dateofIRS.split('-');
         currentdate = date.newinstance(Integer.valueOf(obj_date[2]),Integer.valueOf(obj_date[1]), Integer.valueOf(obj_date[0]));
 
@@ -67,7 +74,7 @@ public with sharing class driverComplianceReport
     {
         System.debug('listcomplincemonth'+listcomplincemonth);
         List<Contact> obj_contact = new List<Contact>();
-        obj_contact = [SELECT id, compliancestatus__c, Name, Employee_ID__c, External_Email__c FROM Contact WHERE (compliancestatus__c ='Yes') and Account.Name='Delta' and (Role__c =: StaticValues.roleAdminDriver OR Role__c='Driver' OR Role__c='Driver/Manager')];
+        obj_contact = [SELECT id, compliancestatus__c, Name, Employee_ID__c, External_Email__c FROM Contact WHERE (compliancestatus__c ='Yes')and Deactivated_Date__c = null and AccountId =: accountId AND (Role__c =: StaticValues.roleAdminDriver OR Role__c='Driver' OR Role__c='Driver/Manager')];
         List<ID> obj_list_id = new List<ID>();
         for(Contact c:obj_contact)
         {

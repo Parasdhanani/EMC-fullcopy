@@ -1,0 +1,55 @@
+<template>
+    <table id="myTable" class="slds-table slds-table_fixed-layout slds-table_resizable-cols accordion_table">
+        <thead>
+            <tr class="slds-line-height_reset">
+                <th>#</th>
+                <th><div class="slds-truncate">Date</div></th>
+                <th><div class="slds-truncate">Description</div></th>
+                <th><div class="slds-truncate">Credit</div></th>
+                <th><div class="slds-truncate">Debit</div></th>
+                <th><div class="slds-truncate">Balance</div></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="collapsible" data-id="101" onclick={clickHandler}>
+                <td>1</td>
+                <td>05 May 2013</td>
+                <td>Credit Account</td>
+                <td class="text-success">$150.00</td>
+                <td class="text-error"></td>
+                <td class="text-success">$150.00</td>
+            </tr>
+            <tr class="content" data-id="101"  >
+                <td  class="opened" colspan="6">
+                    <form>
+                        <table class="slds_opened">
+                            <tbody>
+                                <tr>
+                                    <td  ><div id="content"> Content Demo1 </div> </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>05 May 2013</td>
+                <td>Credit Account</td>
+                <td class="text-success">$11.00</td>
+                <td class="text-error"></td>
+                <td class="text-success">$161.00</td>
+            </tr>
+        
+            <tr>
+                <td>3</td>
+                <td>05 May 2013</td>
+                <td>Credit Account</td>
+                <td class="text-success">$500.00</td>
+                <td class="text-error"></td>
+                <td class="text-success">$661.00</td>
+            </tr>
+          
+        </tbody>
+    </table>
+</template>

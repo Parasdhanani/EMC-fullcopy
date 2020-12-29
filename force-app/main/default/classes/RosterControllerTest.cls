@@ -1,21 +1,18 @@
 @isTest
 public class RosterControllerTest {
     public static testmethod void RosterControllerTestMethod(){
-       
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+         List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
+         
         RecordUtilityClass.sendEmailforCompliance();
         RecordUtilityClass.enableMappingGasPriceTrigger();
         RecordUtilityClass.vehicleUrlMapping();
         RecordUtilityClass.exceptionEmail();
-
-       /* Address__c obj_Address = new Address__c();
-        obj_Address.State__c ='Alabama';
-        obj_Address.City__c ='Abbeville';
-        obj_Address.Abbreviation__c ='AL';
-        obj_Address.ZIP_Code__c ='36310'; 
-        
-        List<Address__c> obj_list_Address = new List<Address__c>();
-        obj_list_Address.add(obj_Address);
-        insert obj_list_Address;*/
         
         Vehicle_URL_Mapping__c veh2 = new Vehicle_URL_Mapping__c();
         veh2.URL__c = 'https://cdn3.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
@@ -46,8 +43,23 @@ public class RosterControllerTest {
         Contact obj_Manager_list1 = new Contact();
         obj_Manager_list1 = RecordUtilityClass.getManagerContact();
 
-        EmployeeDetails empDetail = WrapperUtils.getEmployeeDetails(obj_Driver_list1[0]);
-        EmployeeDetails empDetail1 = WrapperUtils.getEmployeeDetails(obj_Contact2);
+        Profile p = [SELECT Id FROM Profile WHERE Name='Customer Community Login User - Driver']; 
+        User user = new User(Alias = 'standt', 
+                            Email='standarduser1@testorg.com', 
+                            EmailEncodingKey='UTF-8', 
+                            LastName='Testing', 
+                            LanguageLocaleKey='en_US', 
+                            LocaleSidKey='en_US', 
+                            ProfileId = p.Id, 
+                            TimeZoneSidKey='America/Los_Angeles', 
+                            UserName='standarduser2@testorg.com',
+                            Contactid = obj_Manager_list[0].id,
+                            IsActive = True
+                        );
+        insert user;
+
+        EmployeeDetails empDetail = WrapperUtils.getEmployeeDetails(obj_Driver_list1[0],120.34,230.43);
+        EmployeeDetails empDetail1 = WrapperUtils.getEmployeeDetails(obj_Contact2,120.34,230.43);
          String str = 'Employee_ID__c,Firstname,LastName,External_Email__c,' + 
                             'Vehicle_Type__c,Role__c,MailingCity,MailingState,' + 
                             'MailingPostalCode,AccountId,Activation_Date__c,Manager__c,MobilePhone, Driving_States__c\n'+
@@ -76,8 +88,12 @@ public class RosterControllerTest {
         RosterController.getAllManagers();
         RosterController.getlistAllEmployees(obj_Account.Id,obj_admincontact.Id);
         RosterController.getRoles();
+        RosterController.getDriverType();
+        RosterController.getJobTitle();
+        RosterController.getDepartment();
         RosterController.getDrivingStates();
-        //RosterController.getUser(obj_admincontact.Id);
+        RosterController.resetPassword(obj_admincontact.Id);
+        RosterController.getUser(obj_admincontact.Id);
         RosterController.sendExceptionMails('Insert Failed','1');
         RosterController.getCustomExceptionMessage('1');
         RosterController.readFromFile(csvAsString,accId);
@@ -87,14 +103,12 @@ public class RosterControllerTest {
         RosterController.getCountryStateCity('36310');
         RosterController.getCity('Abbeville','36310');
         RosterController.getPickListValuesIntoList();
-               
-        /*RosterController.wrapperEmployeeDetails = empDetail;
-        RosterController.currentLoggedInContact = obj_admincontact;
-        RosterController.csvFileBody = csvFileBody;*/
+        List<String> conIdList = new List<String>();
+        for(contact cont:obj_Manager_list){
+            conIdList.add(cont.Id);
+        }
+        RosterController.massFreeze(JSON.serialize(conIdList),true);
         RosterController.editInlineNewEmployee(NULL,'','');
-       // RosterController.getCountryStateCity('');
-       // RosterController.getCity('','');
-      //  RosterController.getContactByEmailAddress('testtinghhhh@gmail.com');
         empDetail.lastname='sdhshdgsag21212';
         empDetail1.userid =NULL;
         empDetail.email ='rghgfhgf21212@gmail.com';
@@ -108,12 +122,25 @@ public class RosterControllerTest {
             insertedContactIDList.add(currentcontact.id);
         }        
         RosterController.postHTTPCreateNewUserTriplog(insertedContactIDList);
-        RosterController.getExcetionTypes('System.DmlException','UPDATE FAILED',12);
-        RosterController.getExcetionTypes('TypeException','UPDATE FAILED',12);
-        RosterController.getExcetionTypes('QueryException','UPDATE FAILED',12);
+        RosterController.getExcetionTypes('System.DmlException','[UPDATE FAILED]',12);
+        RosterController.getExcetionTypes('TypeException','Invalid decimal: .',12);
+        RosterController.getExcetionTypes('QueryException','[List has no rows]',12);
+        RosterController.getExcetionTypes('NullPointerException','Attempt to de-reference',12);
+        RosterController.putHTTP(String.valueOf(obj_Account.id),'test1932434230@testing.com');
+        RosterController.massResetPassword(JSON.serialize(insertedContactIDList));
+        RosterController.massEnableUser(JSON.serialize(insertedContactIDList));
+        RosterController.putHTTPConcurConnect(obj_Account.Id,JSON.serialize(insertedContactIDList));
         Test.stopTest();
     }
     public static testmethod void RosterControllerTestMethod1(){
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+         List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
+         
         RecordUtilityClass.exceptionEmail();
         RecordUtilityClass.createRecordsAdminDashboardController();
         RecordUtilityClass.sendEmailforCompliance();

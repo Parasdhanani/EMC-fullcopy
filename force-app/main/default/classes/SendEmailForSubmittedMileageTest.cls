@@ -7,11 +7,17 @@ public class SendEmailForSubmittedMileageTest {
         customSetting1.Name = 'SendEmailForSubmittedMileage';
         customSetting1.Send_email_from_code__c= true;
         insert customSetting1;
-
+        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
+        
         SendEmail__c customSetting2 =  new SendEmail__c();
         customSetting2.Name = 'Send Email For Compliance';
         customSetting2.Send_email_from_code__c= true;
         insert customSetting2;
+        
         SendEmailToMe__c  objSendEmailToMe = new SendEmailToMe__c();
         objSendEmailToMe.Name = 'SendEmailForSubmittedMileage';
         objSendEmailToMe.Send_email_to_me__c = true;
@@ -29,6 +35,7 @@ public class SendEmailForSubmittedMileageTest {
         Contact con = RecordUtilityClass.buildAdminContact(acc);
         con.Role__c = 'Driver';
         con.Vehicle_Type__c = '2019 Full-Size Sedan';
+        con.Time_Zone__c = 'US/Mountain' ;
         insert con;
         //Contact con = TestUtilityClass.getTestSingleContact(acc);
         //Employee_Reimbursement__c emp = TestUtilityClass.getTestEmployeeReimbursement3(con);
@@ -53,6 +60,20 @@ public class SendEmailForSubmittedMileageTest {
         empReim.Maintenance_and_Tires__c =10;
         insert empReim;
         
+        Employee_Mileage__c emp = new Employee_Mileage__c();
+        emp.EmployeeReimbursement__c = empReim.id;
+        emp.Contact_Email_Id__c = con.External_Email__c;
+        emp.Name = 'Test Mileage Record';
+        emp.Trip_Status__c = StaticValues.noApprovedYet;
+        emp.TimeZone__c = 'US/Mountain' ;
+        emp.Mileage__c = 10.00;
+        emp.Day_Of_Week__c = 'Mon';
+        emp.Stay_Time__c = 10;
+        emp.Fuel_price__c = 10.00;
+        emp.StartTime__c = system.now();
+        emp.EndTime__c =  system.now();
+        insert emp;
+            
         
         SendEmailForSubmittedMileage mil = new SendEmailForSubmittedMileage();
          Database.executeBatch(mil, 1);

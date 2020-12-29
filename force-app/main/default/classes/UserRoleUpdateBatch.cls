@@ -85,7 +85,7 @@ global class UserRoleUpdateBatch implements Database.Batchable<sObject>,Database
             csvAttc.setFileName(csvname);
             csvAttc.setBody(csvBlob);
             Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-            String[] toAddresses = new list<string> {'sanket.goc@gmail.com'};
+            String[] toAddresses = new list<string> {'sanket.goswami@getoncrm.com'};
            
             email.setToAddresses(toAddresses);
             email.setFileAttachments(new Messaging.EmailFileAttachment[]{csvAttc});

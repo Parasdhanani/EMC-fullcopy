@@ -1,0 +1,449 @@
+@media (max-width: 20em) and (min-width: 40em) {
+    td.slds_driverList {
+        width: 13vw;
+        padding: 5px 5px 5px 0px;
+    }
+}
+@-moz-keyframes timer-loader {
+    0% {
+      -moz-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -moz-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+  @-webkit-keyframes timer-loader {
+    0% {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes timer-loader {
+    0% {
+      -moz-transform: rotate(0deg);
+      -ms-transform: rotate(0deg);
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -moz-transform: rotate(360deg);
+      -ms-transform: rotate(360deg);
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+  /* :not(:required) hides this rule from IE9 and below */
+  .timer-loader:not(:required) {
+    border: 6px solid rgb(21, 100, 196);
+    -moz-border-radius: 24px;
+    -webkit-border-radius: 24px;
+    border-radius: 24px;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    display: inline-block;
+    overflow: hidden;
+    position: relative;
+    text-indent: -9999px;
+    width: 48px;
+    height: 48px;
+  }
+  .timer-loader:not(:required)::before {
+    -moz-animation: timer-loader 1250ms infinite linear;
+    -webkit-animation: timer-loader 1250ms infinite linear;
+    animation: timer-loader 1250ms infinite linear;
+    -moz-transform-origin: 3px 3px;
+    -ms-transform-origin: 3px 3px;
+    -webkit-transform-origin: 3px 3px;
+    transform-origin: 3px 3px;
+    background: rgb(21, 100, 196);
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    content: '';
+    display: block;
+    position: absolute;
+    width: 6px;
+    height: 19.2px;
+    left: 15px;
+    top: 15px;
+  }
+  .timer-loader:not(:required)::after {
+    -moz-animation: timer-loader 15000ms infinite linear;
+    -webkit-animation: timer-loader 15000ms infinite linear;
+    animation: timer-loader 15000ms infinite linear;
+    -moz-transform-origin: 3px 3px;
+    -ms-transform-origin: 3px 3px;
+    -webkit-transform-origin: 3px 3px;
+    transform-origin: 3px 3px;
+    background: rgb(21, 100, 196);
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    content: '';
+    display: block;
+    position: absolute;
+    width: 6px;
+    height: 16px;
+    left: 15px;
+    top: 15px;
+  }
+.slds-container {
+    font-size: 1em;
+    overflow: hidden;
+    font-family: 'Proxima Nova' !important;
+}
+
+.slds-context-bar__label-action:focus,
+.slds-context-bar__label-action:focus:hover {
+    text-decoration: none;
+    color: #fff;
+}
+
+.navbar__brand {
+    cursor: pointer;
+    display: inline-block;
+    padding-top: 0.6125rem;
+    padding-bottom: .6125rem;
+}
+
+.slds-button {
+    font-family: 'Proxima Nova' !important;
+    cursor: pointer;
+}
+
+.quickSearchInput,
+.advSearch,
+.slds-flagbtn,
+.slds-approvebtn {
+    border: 1px solid #4986c3 !important;
+}
+
+.slds-context-bar__item {
+    font-family: 'Proxima Nova' !important;
+}
+
+.bar-item_active {
+    font-weight: 600;
+    font-family: 'Proxima Nova' !important;
+}
+
+.ml-9 {
+    margin-left: 9rem;
+}
+
+.ml-20 {
+    margin-left: 335px;
+}
+
+.mt-6 {
+    margin-top: 1px;
+}
+
+.pl-1 {
+    padding-left: 0.5em !important;
+}
+
+.ml-16 {
+    margin-left: 0rem;
+}
+
+.slds-context-bar {
+    height: 68px;
+    padding-right: 40px;
+    padding-left: 40px;
+    background: #78bc42;
+    border-bottom: none;
+
+}
+
+.slds-context-bar__primary {
+    margin-bottom: 0.25rem;
+    margin-top: 0.25rem;
+}
+
+.slds-context-bar__label-action {
+    color: #ffffff;
+    font-size: 1.2em;
+}
+
+.slds-context-bar__label-action:hover {
+    color: #ffffff;
+}
+.slds-context-bar-item{
+    display: flex;
+    align-content: center;
+    align-items: stretch;
+    white-space: nowrap;
+    position: relative;
+    max-width: 15rem;
+    transition: background-color .25s cubic-bezier(0.39, 0.575, 0.565, 1);
+}
+/* .slds-context-bar__item:not(.slds-no-hover):hover:after {
+    background: rgba(0, 209, 0, 1);
+}
+
+.slds-context-bar__item.slds-is-active:before {
+    background: rgba(34, 255, 0, 0.877);
+} */
+
+.slds-context-bar__secondary {
+    margin-bottom: 0.25rem;
+    margin-top: 0.25rem;
+    flex-direction: row-reverse;
+}
+
+.img-fluid {
+    height: 40px;
+}
+
+.slds-theme_shade {
+    background-color: none;
+    border: none;
+}
+
+.slds-box {
+    padding: 1rem;
+    border-radius: 1.25rem;
+    background-color: #cfe6f7e7;
+    border: 1px solid skyblue;
+    margin-top: 10px;
+    margin-left: 5px;
+}
+
+.nav_bar_wrap {
+    height: 78px;
+}
+
+.trip_btn {
+    position: relative;
+    margin-top: 85px;
+}
+
+.slds-button_outline-brand {
+    background-color: #cfe6f7e7 !important;
+}
+
+.tripDiv {
+    width: 1180px;
+    position: relative;
+    top: 74px;
+    left: 14px;
+}
+
+.slds-form-element__label {
+    font-size: 1em;
+    color: #000000;
+    font-family: 'Proxima Nova' !important;
+}
+
+.slds-button_neutral:hover {
+    background-color: #0074cc !important;
+    color: #ffffff;
+}
+
+.slds-button_neutral {
+    color: #4d4e50;
+}
+
+.slds-button_brand {
+    background-color: #4385f5;
+}
+
+.slds-button_brand:hover {
+    background-color: #0074cc;
+}
+
+.slds-searchIcon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.spinner-padding {
+    position: absolute;
+    padding-top: 43%;
+    left: 40rem;
+    /* padding-top: 80%;
+    left: 44rem; */
+}
+
+.content-body {
+    width: 100%;
+    margin: 1em 0;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.p-18 {
+    position: absolute !important;
+    right: 49rem;
+}
+
+.notesInput {
+    width: 89% !important;
+}
+
+.pl-26 {
+    padding-left: 26% !important;
+}
+
+.absPosition {
+    position: absolute !important;
+    max-width: 100% !important;
+    left: 0.5rem !important;
+}
+
+.pad-4 {
+    padding: 5px !important;
+    position: absolute;
+    right: 14.6rem;
+}
+
+.advanceSearchdiv {
+    width: 24% !important;
+}
+
+.pdr-4 {
+    padding-right: 4px;
+}
+
+.pdl-4 {
+    padding-left: 4px;
+}
+
+.quickSearchDiv {
+    width: 13%;
+    padding-left: 0rem !important;
+    padding-right: 0.15rem !important;
+}
+
+.pdr-2 {
+    padding-right: 2rem !important;
+}
+
+.pdr-7 {
+    padding-right: 7rem !important;
+}
+
+.slds-approvebtn:hover {
+    background-color: #2dcc70 !important;
+    color: #fff;
+}
+
+.slds-flagbtn:hover {
+    background-color: #e84c3d !important;
+    color: #fff;
+}
+
+.slds-icon-text-default:hover {
+    fill: #ffffff !important;
+}
+
+.slds_grid_content {
+    margin-left: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.width-8 {
+    width: 8.5%;
+}
+
+.slds-large-size_1-of-8 {
+    width: 10.5%;
+}
+
+.pdl-rem {
+    padding-left: 1.15rem !important;
+}
+
+.statusLabel {
+    position: absolute !important;
+    left: 37.4rem;
+}
+
+.validate-componentCss {
+    position: absolute;
+    right: 50.9rem;
+    min-width: 25%;
+}
+
+.validate-componentStatusCss {
+    position: absolute;
+    min-width: 21%;
+    left: 38.95rem;
+}
+
+.validate-component2Css {
+    position: absolute;
+    min-width: 25.5%;
+    left: 11rem;
+}
+
+.trackdropdownCss {
+    position: absolute;
+    min-width: 21%;
+    left: 38.95rem;
+}
+
+.cancelBtn {
+    position: absolute;
+    left: 6rem;
+    top: 1rem;
+    color: #000000;
+    font-weight: bold;
+}
+
+.clearBtn {
+    position: absolute;
+    left: 17rem;
+    top: 1rem;
+
+}
+
+.searchBtn {
+    position: absolute;
+    left: 28rem;
+    top: 1.25rem;
+}
+
+.font-color {
+    color: #ffffff;
+}
+
+.mileageDiv-width {
+    width: 26% !important;
+    margin-left: 4rem;
+}
+
+.statusDiv-width {
+    width: 22% !important;
+    margin-left: 0.5rem;
+}
+
+.ml-rem {
+    margin-left: 1.25rem !important;
+}
+
+.slds-context-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    animation: slide-down 0.2s ease;
+    transition: all 0.2s ease;
+    opacity: 1;
+    z-index: 9;
+}
+
+table td {
+    padding: 5px;
+    white-space: nowrap;
+    position: relative;
+}

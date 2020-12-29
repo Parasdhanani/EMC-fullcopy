@@ -38,57 +38,19 @@ public without sharing class ContactTriggerHelper {
         }
         
     }
-
-    public static void updateTimeZone(List<Contact> contactList){
-        set<String> stateAbbrivationset = new set<String>();
-        Map<String,String> timeZoneMap = new Map<String,String>();
-        for(Contact conRec : contactList)
-        {   
-            
-
-            if(conRec.MailingState != null)
-            {
-                stateAbbrivationset.add(conRec.MailingState);
-            }   
-            else{
-                if(conRec.Driving_States__c!=null && conRec.Driving_States__c.contains(';')){
-                    stateAbbrivationset.addAll(conRec.Driving_States__c.split(';'));
-                }
-                else if(conRec.Driving_States__c!=null){
-                    stateAbbrivationset.add(conRec.Driving_States__c);
-                }
-            }         
-        }
-        for(Address__c objAdd : [SELECT Id, Time_Zone__c, State__c, Abbreviation__c FROM Address__c WHERE Abbreviation__c IN : stateAbbrivationset]){
-            timeZoneMap.put(objAdd.Abbreviation__c, objAdd.Time_Zone__c);
-        }
-        for(Contact conRec : contactList){
-            if(conRec.MailingState != null){
-                if(timeZoneMap.containsKey(conRec.MailingState)){
-                    conRec.Time_Zone__c = timeZoneMap.get(conRec.MailingState);
-                }
-            }            
-            else {
-                if(conRec.Driving_States__c != null){
-                    if(timeZoneMap.containsKey(conRec.Driving_States__c)){
-                        conRec.Time_Zone__c = timeZoneMap.get(conRec.Driving_States__c);
-                    }
-                }
-            }
-        }
-    }
     
     @Future(callout = true)
     public static void putHTTPUpdateUserPhoneTriplog(Map<String,String> tripIdWisePhone,Map<String,String> triplogidwiseAPIkey) 
     {
-        String url = 'https://triplogmileage.com/web/api/users/';
         Http h;
         HttpRequest req;
         HttpResponse res;
+        String MLOGACCOUNT = System.Label.Triplog_New_URL;
 
         for(String currentUserId : triplogidwiseAPIkey.keySet())
         {
-            if(tripIdWisePhone.containsKey(currentUserId))
+            String baseURL = !MLOGACCOUNT.Contains( triplogidwiseAPIkey.get(currentUserId) ) ? StaticValues.TRIPLOG_BASEURL : StaticValues.MLOG_BASEURL;
+            if(tripIdWisePhone.containsKey(currentUserId) && tripIdWisePhone.get(currentUserId) != null)
             {
                 JSONGenerator gen = JSON.createGenerator(true);
                 gen.writeStartObject();
@@ -96,7 +58,7 @@ public without sharing class ContactTriggerHelper {
                 gen.writeEndObject();
                 h = new Http();
                 req = new HttpRequest();
-                req.setEndpoint('https://triplogmileage.com/web/api/users/' + currentUserId);
+                req.setEndpoint( baseURL + '/api/users/' + currentUserId);
                 req.setMethod('PUT');
                 req.setTimeout(120000);
                 req.setbody(gen.getAsString());
@@ -302,7 +264,7 @@ public without sharing class ContactTriggerHelper {
                     if(owea.size()>0) {
                         mail.setOrgWideEmailAddressId(owea.get(0).Id);
                     }
-                    mail.setBccAddresses(new String[] {'natavar.goc@gmail.com','Minkesh.patel@getoncrm.com','sanket.goc@gmail.com'});
+                    mail.setBccAddresses(new String[] {'minkeshp@askemc.com','sanket.goswami@getoncrm.com'});
                     mails.add(mail);                    
                 }
             }
@@ -311,10 +273,90 @@ public without sharing class ContactTriggerHelper {
         SendEmail__c  objSendEmail = SendEmail__c.getValues('Send Email For Compliance');
         if(objSendEmail.Send_email_from_code__c==true)
         {
-            //Messaging.sendEmail(mails);
+            Messaging.sendEmail(mails);
         }
            
     }
+
+    //This method is used when deactivate date is removed and create a new reimbursement for that driver.
+    public static void createReimRecord(List<Contact> newCon, Map<ID, Contact> conOldMap) {
+        
+        List<Employee_Reimbursement__c> reimToInsert   = new List<Employee_Reimbursement__c>();
+        for(Contact con : newCon) {
+            if(conOldMap.get(con.id).Deactivated_Date__c != null && (conOldMap.get(con.id).Deactivated_Date__c != con.Deactivated_Date__c)){
+              
+                if(con.Role__c != 'Admin' && con.Role__c != 'Manager') {
+                    reimToInsert.add(CreateReimbursement(con));
+                }
+            }
+            if(reimToInsert.size() > 0){
+                insert reimToInsert;
+                ContactTriggerHelper.putHTTPEnableUserTriplog(con.id);
+                RosterController.resetPassword(con.id);
+                RosterController.putHTTP(con.AccountId,con.External_Email__c);
+            }
+        }
+    }
+
+    public static Employee_Reimbursement__c CreateReimbursement(Contact con){
+        IRS_Mileage_Rate__c objIRSRate = [SELECT id,year__c,IRS_Rate__c FROM IRS_Mileage_Rate__c Where year__c =: String.valueOf(System.today().year()) Limit 1];
+        String lastMonth = Utils.fetchMonths(1, -1)[0];
+        Employee_Reimbursement__c er = new Employee_Reimbursement__c();
+        er.Fixed_Amount__c = con.Fixed_Amount__c;
+        er.Status__c = 'Pending';
+        er.Maintenance_and_Tires__c = con.Maintenance_and_Tires__c;
+        er.MPG__c = con.MPG__c;
+        er.Contact_Id__c = con.id;
+        er.Name = con.Name__c + ':' + lastMonth;
+        er.Month__c = lastMonth;
+        er.Fuel_Price__c = 0;
+        if(objIRSRate != null){
+            er.IRS_Mileage_Rate__c = objIRSRate.ID;
+        }
+        return er;
+    }
+
+    public static void  CommunityReimCreate(List<Contact> contactList) {
+        List<Employee_Reimbursement__c> reimToInsert   = new List<Employee_Reimbursement__c>();
+        for(Contact con : contactList){
+            if(con.Role__c != 'Admin' && con.Role__c != 'Manager' && con.Deactivated_Date__c == null) {
+                reimToInsert.add(CreateReimbursement(con));
+            }
+        }
+        if(reimToInsert.size() > 0){
+            insert reimToInsert;
+        }
+    }
+    @Future(callout = true)
+    public static void putHTTPEnableUserTriplog(String conId) {
+        Http h;
+        HttpRequest req;
+        HttpResponse res;
+        String MLOGACCOUNT = System.Label.Triplog_New_URL;
+        for(Contact conObj : [SELECT id,Triplog_UserID__c, Account.Triplog_API__c  FROM Contact WHERE id =: conId]) {
+            if(conObj.Triplog_UserID__c != null && conObj.Account.Triplog_API__c != null){
+                String baseURL = !MLOGACCOUNT.Contains( conObj.Account.Triplog_API__c ) ? StaticValues.TRIPLOG_BASEURL : StaticValues.MLOG_BASEURL;
+                JSONGenerator gen = JSON.createGenerator(true);
+                gen.writeStartObject();
+                gen.writeBooleanField('disabled',false);
+                gen.writeEndObject();
+                h = new Http();
+                req = new HttpRequest();
+                req.setEndpoint( baseURL + '/api/users/' + conObj.Triplog_UserID__c);
+                req.setMethod('PUT');
+                req.setTimeout(120000);
+                req.setbody(gen.getAsString());
+                req.setHeader('Content-Type', 'application/json');
+                req.setHeader('Authorization', 'apikey '+ conObj.Account.Triplog_API__c);
+                System.debug('conObj.Triplog_UserID__c'+conObj.Triplog_UserID__c);
+                System.debug('conObj.Account.Triplog_API__c'+conObj.Account.Triplog_API__c);
+                if(!Test.isRunningTest())
+                {
+                    res = h.send(req);            
+                }
+            }
+        }
+    }    
 /* SHould shift in Batch Class :- UserRoleUpdateBatch
     @future
     public static void updateUserEmail (Set<Id> contactIds) {
@@ -436,29 +478,45 @@ public without sharing class ContactTriggerHelper {
         }
     }*/
     
-    //Send Email regarding New Drivers
-    /*public static void sendEmail(List<Contact> contactList) {
-    
-        EmailTemplate templateId = [Select id, subject, body, HTMLValue from EmailTemplate where name = 'welcomeEmailforapp' Limit 1];
+    //Send Email regarding New Drivers AI-000437
+    public static void sendEmailForNewContact(List<Contact> contactList) {
+        Map<Id,String> accountNameMap = new Map<Id,String>();
+        for(Account objAccount : [SELECT ID,Name FROM account WHERE isUsingTriplog__c = true]){
+            accountNameMap.put(objAccount.id,objAccount.Name);
+        }
+
+        EmailTemplate templateId = [SELECT Id, Subject,HtmlValue, body FROM EmailTemplate WHERE developerName = 'New_Contact_Inform_Driver_Services' Limit 1];
         List<Messaging.SingleEmailMessage> mails = new List<Messaging.SingleEmailMessage>();
+        OrgWideEmailAddress[] owea = [SELECT Id,Address from OrgWideEmailAddress where Address = 'driverservices@mburse.com'];
         for(Contact contObj : contactList){
-            if(contObj.IsCreatedFromCommunity__c == true){
-                //For New Driver Send E-Mail
-                Messaging.SingleEmailMessage mail =  new Messaging.SingleEmailMessage();
-                mail.setTargetObjectId(contObj.OwnerId);
-                string[] toAddresses = new string[]{System.Label.DriverServicesEmail};
-                mail.setToAddresses(toAddresses);
-                mail.setReplyTo('mburse@driverservices.com');
-                mail.setSenderDisplayName('The mBurse Team');
-                mail.setTemplateID(templateId.Id); 
-                mail.setSaveAsActivity(false);
-                mails.add(mail);
+            String newemailBody = templateId.HtmlValue;
+            Messaging.SingleEmailMessage mail =  new Messaging.SingleEmailMessage();
+            mail.setTargetObjectId(contObj.OwnerId);
+            string[] toAddresses = new string[]{System.Label.DriverServicesEmail};
+            mail.setToAddresses(toAddresses);
+            mail.setReplyTo('mburse@driverservices.com');
+            system.debug(contObj);
+            
+            if(accountNameMap.get(contObj.AccountId) != null){
+                newemailBody = newemailBody.replace('{!Account.Name}',accountNameMap.get(contObj.AccountId));
             }
+            IF(contObj.Role__c != null){
+                newemailBody = newemailBody.replace('{!Role}',contObj.Role__c ); 
+            }
+            newemailBody = newemailBody.replace('{!date}',String.valueOf(System.today())); 
+            newemailBody = newemailBody.replace('{!Email}',contObj.External_Email__c); 
+            newemailBody = newemailBody.replace('{!$Label.Driver_Forword_Logo}', System.Label.Driver_Forword_Logo);
+            mail.setSubject(templateId.Subject);
+            mail.setHtmlBody(newemailBody);
+            mail.setOrgWideEmailAddressId(owea.get(0).Id);
+            mail.setSaveAsActivity(false);
+            mails.add(mail);
+            
         }      
         if(!Test.isRunningTest()){  
-        //Messaging.sendEmail(mails);
+            Messaging.sendEmail(mails);
         }
-    }*/
+    }
     
     
     //Track History of Contact
@@ -492,6 +550,9 @@ public without sharing class ContactTriggerHelper {
                 if(c.Vehicle_Type__c!=conOld.get(c.id).Vehicle_Type__c)
                     newAuditTrialCreate.add(new AuditTrail__c(Field__c='Standard Vehicle Make Model and Year',Timestamp__c=Datetime.now(),Modifiedby__c=UserInfo.getFirstName()+' '+UserInfo.getLastName(),NewValue__c=c.Vehicle_Type__c,OldValue__c=conOld.get(c.id).Vehicle_Type__c,Contact__c=c.id));
                 }
+                if(c.Deactivated_Date__c != conOld.get(c.Id).Deactivated_Date__c)
+                    newAuditTrialCreate.add(new AuditTrail__c(Field__c='Deactivation Date',Timestamp__c=Datetime.now(),Modifiedby__c=UserInfo.getFirstName()+' '+UserInfo.getLastName(),NewValue__c=String.valueOf(c.Deactivated_Date__c),OldValue__c=String.valueOf(conOld.get(c.id).Deactivated_Date__c),Contact__c=c.id));
+                
             //for(String ConOldMap:conOld.keySet()){
                 
            // }

@@ -45,7 +45,7 @@ public class DeActivatedUserBatchMileageTest {
         conList.MPG__c = 5;
         conList.Maintenance_and_Tires__c = 3;
         conList.Triplog_UserID__c = con1.Triplog_UserID__c;
-        conList.Deactivated_Date__c = con1.Deactivated_Date__c;
+        conList.Deactivated_Date__c = system.now();
         conList.External_Email__c = 'test_Managr101@test99.com';
         conList.IsDeactivated__c = con1.IsDeactivated__c;
         conList.Manager__c = con1.Id;
@@ -76,7 +76,7 @@ public class DeActivatedUserBatchMileageTest {
 
         Employee_Reimbursement__c er = new Employee_Reimbursement__c();
         er.Contact_Id__c = conList.Id;
-        er.month__c = DeActivatedUserBatch.currentMonth(0);
+        er.month__c = '06-2020';
         er.Name = conList.lastname+':'+er.month__c;
         er.Status__c = 'Pending';
         er.Fuel_Price__c = gasprice.Fuel_Price__c;

@@ -138,7 +138,7 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
         DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch(con.id);
         batchmileageobj.buildNoMileageEmail('','','','');
-        batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+        //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
         DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     } 
@@ -280,7 +280,7 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
             DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch();
             batchmileageobj.buildNoMileageEmail('','','','');
-            batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+            //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
             DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     }
@@ -421,15 +421,12 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
             DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch();
             batchmileageobj.buildNoMileageEmail('','','','');
-            batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+            //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
             DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     }
 
-
-
-
-     public static testmethod void Testmethod4()
+    public static testmethod void Testmethod4()
     {
         Address__c obj_Address = new Address__c();
         obj_Address.State__c ='Gujrat';
@@ -566,7 +563,7 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
         DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch();
         batchmileageobj.buildNoMileageEmail('','','','');
-        batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+        //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
         DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     }
@@ -707,7 +704,7 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
         DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch();
         batchmileageobj.buildNoMileageEmail('','','','');
-        batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+        //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
         DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     }
@@ -838,7 +835,7 @@ public class DeActivatedUserEmailBatchTest
         emp.Trip_Date__c = Date.today().addDays(-10);
         emp.Trip_Origin__c = 'Delhi';
         emp.Trip_Destination__c = 'Mumbai';
-        emp.Mileage__c = 0;
+        emp.Mileage__c = 10;
         emp.EmployeeReimbursement__c = er.id;
         insert emp;
         
@@ -848,7 +845,7 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
         DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch(con.id);
         batchmileageobj.buildNoMileageEmail('','','','');
-        batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+        //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
         DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     } 
@@ -990,7 +987,7 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
             DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch();
             batchmileageobj.buildNoMileageEmail('','','','');
-            batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+            //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
             DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     }
@@ -1131,7 +1128,7 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
             DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch();
             batchmileageobj.buildNoMileageEmail('','','','');
-            batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+            //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
             DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     }
@@ -1276,7 +1273,7 @@ public class DeActivatedUserEmailBatchTest
         toAddresses.add('natavar.goc@gmail.com');
         DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch();
         batchmileageobj.buildNoMileageEmail('','','','');
-        batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+        //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
         DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     }
@@ -1419,7 +1416,7 @@ public class DeActivatedUserEmailBatchTest
         contactList.add(con.id);
         DeActivatedUserEmailBatch batchmileageobj = new DeActivatedUserEmailBatch(contactList);
         batchmileageobj.buildNoMileageEmail('','','','');
-        batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
+        //batchmileageobj.buildemail(owea.get(0).Id,toAddresses,'','');
         DataBase.executeBatch(batchmileageobj, 1);            
         Test.stopTest();
     }

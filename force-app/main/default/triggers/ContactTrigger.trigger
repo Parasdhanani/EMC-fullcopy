@@ -2,17 +2,15 @@
 trigger ContactTrigger on Contact (after Update, after insert, before insert, before update) {
     public string name;
     public string accountId;
-    // try{
+   
         if(Trigger.isUpdate && Trigger.isAfter && checkRecursive.runOnce()) {
-        // List<Contact> contactList = new List<Contact>();
-        /* Map<String,String> contactWiseRoleMap = new Map<String,String>();*/
             Map<String,String> managerNames = new Map<String,String>();
             set<String> contactOldIdList = new set<String>();
-            //List<Id> contactIds = new List<Id>();
+           
             Map<String,String> contactInfo = new Map<String,String>();
            
             Map<String,String> accountInfo = new Map<String,String>();
-        // contactList = [Select id,Name,Role__c,FirstName,LastName,Manager__c,Manager__r.Name from Contact where ID IN: Trigger.New];
+       
             for(Contact currentContact : Trigger.New)
             {
                 if(currentContact.Manager__c!=Trigger.oldMap.get(currentContact.id).Manager__c)
@@ -37,7 +35,6 @@ trigger ContactTrigger on Contact (after Update, after insert, before insert, be
             {
                 for(Contact currentContact : [Select id,name from Contact where ID IN:contactOldIdList])
                 {
-                    // this Is specially for Old Managers of Current Contact.
                     managerNames.put(currentContact.id,currentContact.name);
                 }
             }        
@@ -70,17 +67,19 @@ trigger ContactTrigger on Contact (after Update, after insert, before insert, be
                 ContactTriggerHelper.updateUserData(contactNameChange);
             } */
             ContactTriggerHelper.updateComplianceStatus(Trigger.New, Trigger.oldMap);
+            ContactTriggerHelper.createReimRecord(Trigger.New, Trigger.oldMap);
         // ContactTriggerHelper.sendEmailToAdmin(Trigger.New, Trigger.oldMap, Trigger.Old);
         }
         
         if(Trigger.isInsert && trigger.isAfter) {
             //helper class for single email but bulk messages
-            // ContactTriggerHelper.sendEmail(trigger.new);
-
-        // ContactTriggerHelper.setAdminAsManager(Trigger.New);
-            if(Trigger.isAfter) {
-                ContactTriggerHelper.CommunityUserCreate(Trigger.new);
-                
+            TriggerConfig__c customSetting = TriggerConfig__c.getInstance('Defaulttrigger');
+            if(customSetting.ContactTriggersendEmailForNewContact__c){
+                ContactTriggerHelper.sendEmailForNewContact(Trigger.new);
+            }
+            ContactTriggerHelper.CommunityUserCreate(Trigger.new);
+            if(customSetting.ContactTriCommunityReimCreate__c == true){
+                ContactTriggerHelper.CommunityReimCreate(Trigger.new);
             }
         }
         
@@ -91,7 +90,11 @@ trigger ContactTrigger on Contact (after Update, after insert, before insert, be
         if(Trigger.isInsert && Trigger.isBefore) 
         {
         for(Contact currentContact : Trigger.new)
-            {
+            {   
+                if(currentContact.Role__c == 'Admin' || currentContact.Role__c == 'Manager'){
+                    currentContact.Meeting__c = '';
+                    currentContact.Packet__c = '';
+                }
                 name = currentContact.FirstName + ' '+ currentContact.FirstName;
                 accountId = currentContact.AccountId;
                 if(currentContact.External_Email__c != null)
@@ -103,7 +106,7 @@ trigger ContactTrigger on Contact (after Update, after insert, before insert, be
             }
             
             ContactTriggerHelper.CheckVehicalYearAndModel(Trigger.new);
-            ContactTriggerHelper.updateTimeZone(Trigger.new);
+            
         }
         else if(Trigger.isBefore && Trigger.isUpdate)
         {
@@ -150,11 +153,16 @@ trigger ContactTrigger on Contact (after Update, after insert, before insert, be
                     updateContactList.add(currentContact);
                 }
             }
-            System.Debug(updateContactList);
+           
             if(updateContactList.size()>0)
             {
-                ContactTriggerHelper.updateTimeZone(updateContactList);
+                //ContactTriggerHelper.updateTimeZone(updateContactList);
             }
+        }
+
+        //Notification email send to william hanson if changes happen in contact fields 1-Oct-2020
+        if(trigger.isBefore && trigger.isUpdate){
+
         }
     /*} catch(Exception e){
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();

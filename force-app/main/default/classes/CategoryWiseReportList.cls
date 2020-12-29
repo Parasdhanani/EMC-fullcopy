@@ -50,5 +50,7 @@ public with sharing class CategoryWiseReportList
 	    * @description reportName is Single Custom Report (Custom_Report__c) Object's.
 	    */
 		public String reportName{get;set;}
+		public Boolean lockDate{get; set;}
+		public String mileageLockDate {get; set;}
 	}
 }

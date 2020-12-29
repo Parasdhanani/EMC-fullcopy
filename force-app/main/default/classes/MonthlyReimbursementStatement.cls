@@ -161,7 +161,7 @@ global class MonthlyReimbursementStatement implements Database.Batchable<sObject
                     mail.setToAddresses(toAddresses);
                    // String[] toAddresses = new String[] {'natavar.goc@gmail.com'};
                    // mail.setToAddresses(toAddresses); 
-                    mail.setBCCAddresses(new string[]{'natavar.goc@gmail.com','minkesh.patel@getoncrm.com','sanket.goc@gmail.com'});
+                    mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','sanket.goswami@getoncrm.com'});
                     mail.setSubject('Monthly reimbursement statement');
                     mail.setHtmlBody(htmlbody);
                     mail.setPlainTextBody(htmlbody);

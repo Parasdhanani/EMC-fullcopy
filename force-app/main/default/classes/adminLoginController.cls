@@ -25,6 +25,8 @@ public with sharing class adminLoginController {
         vaidationforwrapper valWrappObj = validateUsername(username);
         isValidUsername = valWrappObj.isValid;
         String userid = valWrappObj.id;
+        System.debug('userid---'+valWrappObj.id);
+        System.debug('userid------'+valWrappObj);
         if(!isValidUsername && invalidUsernameCount < 3) {
             invalidUsernameCount++;
             isUsernameInvalid = true;
@@ -41,6 +43,7 @@ public with sharing class adminLoginController {
             isLimitExeeded = false;
             isUsernameInvalid = false;
         }
+        System.debug('pgRef---'+pgRef);
         return pgRef;
     }
 
@@ -54,6 +57,7 @@ public with sharing class adminLoginController {
         
         vaidationforwrapper valWrappObj = new vaidationforwrapper();
         List<User> users = new List<User>([SELECT Id, Email,ContactID FROM User WHERE Email =: username limit 1]);
+        System.debug('users list ---'+users);
         if(!users.isEmpty()) {
             valWrappObj.Id = users[0].Id;
             valWrappObj.isValid = true;

@@ -2,7 +2,14 @@
 public class ContactTriggerHelperTest {
     static testMethod void sendEmailOnDriverCreateTest() {
         //Insert Custom setting data
-
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+        List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
+         
         Address__c obj_Address = new Address__c();
         obj_Address.State__c ='Alabama';
         obj_Address.City__c ='Abbeville';
@@ -32,7 +39,9 @@ public class ContactTriggerHelperTest {
          
         //Insert Account data Using Utility class
         Account acc = TestUtilityClass.getTestSingleAccount();
-
+		acc.Triplog_API__c = 'tedfghfdfsddfghjdfds';
+		update acc;
+        
         Contact con2 = new Contact();
         con2.FirstName = 'Test2';
         con2.LastName = 'Contact';
@@ -46,11 +55,10 @@ public class ContactTriggerHelperTest {
         con2.External_Email__c = 'minkesh.patel14@gmail.com';
         con2.Deactivated_Date__c = Null;
         con2.isCommunityUser__c = True;
+		con2.Triplog_UserID__c = '23rcdsf';
         con2.Role__c = 'Manager';
         con2.Monthly_Mileage_Limit__c = 0;
         con2.IsCreatedFromCommunity__c = true; 
-        
-        
         insert con2;
         
         //Insert Contact data 
@@ -62,12 +70,13 @@ public class ContactTriggerHelperTest {
         con.MailingStreet = 'Test Street';
         con.MailingCity = 'Test City';
         con.MailingState = 'AL';
+		con.Triplog_UserID__c = '23rcdssf';
         con.MailingPostalCode = '36310';
         con.Manager__c = con2.Id;
         con.MailingCountry = 'CA';
         con.Phone = '1232434445';
         con.External_Email__c = 'minkesh.patel14232378@gmail.com';
-        con.Deactivated_Date__c = Null;
+        con.Deactivated_Date__c = system.today();
         con.isCommunityUser__c = True;
         con.Role__c = 'Driver';
         con.Monthly_Mileage_Limit__c = 0;
@@ -76,16 +85,51 @@ public class ContactTriggerHelperTest {
         con.compliancestatus__c = 'Yes';
         insert con;
         
+        con.Deactivated_Date__c = null;
         con.compliancestatus__c = 'No – Vehicle Age';
         update con;
         
+        Contact con1 = new Contact();
+        con1.FirstName = 'Test2';
+        con1.LastName = 'Contact2';
+        con1.AccountId = acc.Id;
+        con1.Fixed_Amount__c = 10;
+        con1.MailingStreet = 'Test Street';
+        con1.MailingCity = 'Test City';
+        con1.MailingState = 'AL';
+        con1.MailingPostalCode = '36310';
+        con1.Manager__c = con2.Id;
+        con1.MailingCountry = 'CA';
+        con1.Phone = '1232434445';
+		con1.Triplog_UserID__c = '23rcdsf';
+        con1.External_Email__c = 'minkesh33.patel14232378@gmail.com';
+        con1.Deactivated_Date__c = system.today();
+        con1.isCommunityUser__c = True;
+        con1.Role__c = 'Driver';
+        con1.Monthly_Mileage_Limit__c = 0;
+        con1.IsCreatedFromCommunity__c = true; 
+        con1.Vehicle_Type__c  = '2019 Full-Size Sedan';
+        con1.compliancestatus__c = 'No – Vehicle Age';
+        insert con1;
         
+        con1.compliancestatus__c = 'Yes';
+		update con1;
+        Map<String,String> contactInfo = new Map<String,String>();
+        Map<String,String> accountInfo = new Map<String,String>();
+        
+        ContactTriggerHelper.putHTTPUpdateUserPhoneTriplog(contactInfo,accountInfo);
         
     }
     static testMethod void testmethod3() {
         //Insert Custom setting data
-
-
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+        List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
+         
         Address__c obj_Address1 = new Address__c();
         obj_Address1.State__c ='Alabama';
         obj_Address1.City__c ='Abbeville';
@@ -175,8 +219,14 @@ public class ContactTriggerHelperTest {
     }
     static testMethod void testmethod4() {
         //Insert Custom setting data
-
-
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+        List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
+         
         Address__c obj_Address1 = new Address__c();
         obj_Address1.State__c ='Alabama';
         obj_Address1.City__c ='Abbeville';

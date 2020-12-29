@@ -32,6 +32,15 @@ public class EmployeeDetailTest {
         empDetail.monthlymileageLimit = '1200';
         empDetail.fixedamount = '500';
         empDetail.branchName = 'abc';
-        
+        empDetail.district = 'abc';
+        empDetail.code = 'abc';
+        empDetail.territory = 'abc';
+        empDetail.jobtitle = 'asc';
+        empDetail.department = 'asc';
+        empDetail.driverType = 'asc';
+        empDetail.freeze = 'asc';
+        empDetail.sage100ID = 'asc';
+        empDetail.glcode = 'asc';
+       
     }
 }

@@ -33,6 +33,7 @@ public class TriplogJsonUserParse {
 		public String firstName {get;set;} 
 		public String lastName {get;set;} 
 		public String phone {get;set;} 
+		public String timeZone {get;set;} 
 		public String employeeId {get;set;} 
 		public String dept {get;set;} 
 		public String supervisor {get;set;} 
@@ -50,7 +51,7 @@ public class TriplogJsonUserParse {
 		public String vehicles {get;set;} 
 		public String locations {get;set;} 
 		public String currentLocation {get;set;} 
-
+		
 		public Users(JSONParser parser) {
 			while (parser.nextToken() != System.JSONToken.END_OBJECT) {
 				if (parser.getCurrentToken() == System.JSONToken.FIELD_NAME) {
@@ -70,6 +71,8 @@ public class TriplogJsonUserParse {
 							lastName = parser.getText();
 						} else if (text == 'phone') {
 							phone = parser.getText();
+						} else if (text == 'timeZone') {
+							timeZone = parser.getText();
 						} else if (text == 'employeeId') {
 							employeeId = parser.getText();
 						} else if (text == 'dept') {

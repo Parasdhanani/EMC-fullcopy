@@ -130,7 +130,7 @@ public with sharing class UpdateMileageController {
         initQueryReim();
     }*/
 
-    public List<MileageWrapper> getMileagesList() {
+    public List<mileageWrapper> getMileagesList() {
         try{
             empMileageList   = [SELECT Id,
                                        Name,
@@ -151,6 +151,7 @@ public with sharing class UpdateMileageController {
             for(Employee_Mileage__c singleMileage : empMileageList) {
                 mileageWrapper.add(new MileageWrapper(singleMileage));
             }
+            
             return mileageWrapper;
         } catch(QueryException e) {
             System.debug('QueryException:'+e.getMessage());

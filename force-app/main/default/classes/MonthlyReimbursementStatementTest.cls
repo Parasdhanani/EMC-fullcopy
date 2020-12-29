@@ -8,6 +8,11 @@ public class MonthlyReimbursementStatementTest {
         customSetting1.Send_email_from_code__c= true;
         insert customSetting1;
         
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
+        
         Account acc = TestUtilityClass.getTestSingleAccount();
         RecordUtilityClass.vehicleUrlMapping();
 

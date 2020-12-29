@@ -42,7 +42,7 @@ global class RG_InsertLastMonthReimbursement implements Database.Batchable<Conta
     global List<Contact> start(Database.BatchableContext BC) {    
            
         List<Contact> allActiveContacts = new List<Contact>([SELECT Id, Name, Account.Name, isCommunityUser__c, Fixed_Amount__c, Maintenance_and_Tires__c, MPG__c, MailingState, MailingCity FROM
-            Contact WHERE (Deactivated_Date__c = NULL OR Deactivated_Date__c > Today) AND (Role__c = 'Driver' OR Role__c = 'Driver/Manager' OR Role__c =: StaticValues.roleAdminDriver)]);
+            Contact WHERE (Deactivated_Date__c = NULL OR Deactivated_Date__c > Today) AND (Role__c = 'Driver' OR Role__c = 'Driver/Manager' OR Role__c =: StaticValues.roleAdminDriver) AND (Driver_Type__c != 'Driver - Part Time' OR Driver_Type__c != 'Driver - Full Time')]);
         
         if(Test.isRunningTest()) {
             List<Contact> allActiveContactsTemp = new List<Contact>();

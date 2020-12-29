@@ -1,14 +1,16 @@
 @isTest
 public class GetTripCalloutTest {
     public static testMethod Void GetTripCalloutForMileageTestMethod() {
+        
         String fuelPrice, mpg, mat, priMin, priMax;
         
         TriggerConfig__c customSetting =  new TriggerConfig__c();
         customSetting.Name = 'Defaulttrigger';
         customSetting.MappingGasPriceTrigger__c = true;
+        customSetting.ContactTriggersendEmailForNewContact__c = true;
         insert customSetting;
-            
-         Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
+        
+        Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
         veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
         veh.vehicle__c =  'Full-Size Sedan';
         veh.Year__c = '2019';
@@ -36,6 +38,7 @@ public class GetTripCalloutTest {
         currentContact.External_Email__c = 'test@test.com';
         currentContact.Triplog_Status__c = 'U';
         currentContact.Vehicle_Type__c  = '2019 Full-Size Sedan';  
+        currentContact.Role__c = 'Driver';  
         insert currentContact;
         
         Employee_Reimbursement__c er = new Employee_Reimbursement__c();
@@ -60,6 +63,7 @@ public class GetTripCalloutTest {
         er1.Month__c = null;
         er1.Name = contact.lastname+':'+er1.month__c;
         er1.Status__c = 'Approved';
+		er1.Approved_Date__c = system.today();
         er1.Fuel_Price__c = null;
         er1.MPG__c = null;
         er1.Maintenance_and_Tires__c = null;
@@ -106,13 +110,69 @@ public class GetTripCalloutTest {
         
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new GetTripCalloutMock());
-        GetTripCallout.GetTripCalloutForMileage(er.id, currentContact.External_Email__c,currentContact.id, priMin, priMax, fuelPrice, mpg, mat, account.Triplog_API__c, er.Triplog_Status__c);
-       // GetTripCallout.putHTTP('');
+        GetTripCallout.GetTripCalloutForMileage(er.id, currentContact.External_Email__c,currentContact.id, priMin, priMax, fuelPrice, mpg, mat, account.Triplog_API__c, er.Triplog_Status__c,true);
+        
         String body = 'test';
         String apiToken = 'test';
-        String finalstr = 'test';
-        
+        String finalstr = 'test';       
         Test.stopTest();
     }
-   
+    public static testMethod Void GetTripCalloutForMileageTestMethod2() {
+
+        TriggerConfig__c customSetting =  new TriggerConfig__c();
+        customSetting.Name = 'Defaulttrigger';
+        customSetting.MappingGasPriceTrigger__c = true;
+        customSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customSetting;
+            
+        Vehicle_URL_Mapping__c veh = new Vehicle_URL_Mapping__c();
+        veh.URL__c = 'https://cdn2.hubspot.net/hubfs/2511299/iStock-494093356.jpg';
+        veh.vehicle__c =  'Full-Size Sedan';
+        veh.Year__c = '2019';
+        insert veh;
+
+        Account account = new Account();
+        account.Name = 'Test Account';
+        account.Triplog_API__c = '123456789';
+        account.Triplog_Status__c = 'U';
+        insert account;
+           
+        Contact currentContact = new Contact();
+        currentContact.Lastname = 'Test Contact';
+        currentContact.AccountId = account.Id;
+        currentContact.External_Email__c = 'test@test.com';
+        currentContact.Triplog_Status__c = 'U';
+        currentContact.Vehicle_Type__c  = '2019 Full-Size Sedan'; 
+        currentContact.Role__c = 'Driver';   
+        insert currentContact;
+        
+        Employee_Reimbursement__c er = new Employee_Reimbursement__c();
+        er.Contact_Id__c = currentContact.Id;
+        er.Month__c = '4-2017';
+        er.Name = contact.lastname+':'+er.month__c;
+        er.Status__c = 'Pending';
+        er.Fuel_Price__c = 1;
+        er.MPG__c = 10;
+        er.Maintenance_and_Tires__c = 24;
+        er.Fuel_Price__c = 1;
+        er.MPG__c = 10.10;
+        er.Maintenance_and_Tires__c = 10;
+        er.Fixed_Amount__c = 10.10;
+        er.Triplog_POST_Response__c = '123';
+        er.Triplog_Status__c = 'U';
+        insert er;
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new GetTripCalloutMock());
+        String apiToken = 'test';
+        Set<Integer> tripSet = new Set<Integer>();
+        tripSet.add(1242);
+        //GetTripCallout.trip_IDs = tripSet;
+        GetTripCallout.putHTTP(apiToken,currentContact.Id,er.Id,tripSet );
+        
+        Test.stopTest();
+
+
+
+    }
 }

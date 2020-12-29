@@ -10,12 +10,14 @@ public class DriverDashboardController
     public static String totalvariableamount{get;set;}
     public static String contactDataAsString {get; set;}
     public static String gaspriceforpreviosmonth {get; set;}
-   
+    public String accInsuranceList {get; set;}
     public static String currentDriverDetails {get;set;}
     public List<Attachment> driverInsuranceAttachmentList {get;set;}
     public List<Attachment> driverPacketAttachmentList {get;set;}
+    public List<Attachment>  obj_driver_driverMVR {get;set;}
     public Integer insuranceSize {get;set;}
     public Integer packetSize {get;set;}
+    public Integer obj_driverpacket_attachMVRsize {get;set;}
     public static Boolean showlastyear {get;set;}
     public static String logoDocument_id {get;set;}
     /**
@@ -26,6 +28,7 @@ public class DriverDashboardController
     public DriverDashboardController() 
     {
         List<contact> currentDriverList = new List<contact>();
+        obj_driver_driverMVR = new List<Attachment>();
         currentDriverDetails = getDriverDetails();
         if(currentDriverDetails!=null)
         {
@@ -45,6 +48,17 @@ public class DriverDashboardController
         insuranceSize = driverInsuranceAttachmentList.size();
         driverPacketAttachmentList = [select id,Body,Name from Attachment where ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%Driver_Packet%' limit 1];
         packetSize = driverPacketAttachmentList.size();
+
+        obj_driver_driverMVR = [SELECT Id, Body, Name FROM Attachment WHERE ParentId=:ApexPages.currentPage().getParameters().get('id') and Name LIKE '%MVR%' limit 1];
+        obj_driverpacket_attachMVRsize = obj_driver_driverMVR.size();
+
+        accInsuranceList = '[]';
+        //AI-000414
+        if(getContactid()!=''&& getAccountid()!='')
+        {
+            List<Account> accInsurances = [SELECT id,Bodily_Injury__c, Uninsured_Motorist__c, Property_Damage__c, Comprehensive__c, Collision__c,Umbrella_Coverage__c FROM account WHERE Id =: getAccountid()];
+           accInsuranceList = String.escapeSingleQuotes( JSON.serialize(accInsurances));
+        }
     }
     public static String getAccountid()
     {

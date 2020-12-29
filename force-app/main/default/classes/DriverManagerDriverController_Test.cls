@@ -1,6 +1,13 @@
 @isTest
 Public class DriverManagerDriverController_Test{
     Public static testmethod void objMethod1(){
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+       List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
     	RecordUtilityClass.createRecordsAdminDashboardController();
     	Account obj_acc = RecordUtilityClass.getAccount();
         Contact obj_admin_contact = RecordUtilityClass.getAdminContact();
@@ -39,6 +46,13 @@ Public class DriverManagerDriverController_Test{
 
     }
     Public static testmethod void objMethod2(){
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        customEmailSetting.ContactTriCommunityReimCreate__c = true;
+        insert customEmailSetting;
+        
+       List<IRS_Mileage_Rate__c> obj_IRS_Mileage_Rate =  RecordUtilityClass.insertIrsRate();
     	RecordUtilityClass.createRecordsAdminDashboardController();
     	DriverManagerDriverDetailsController.getAccountid();
         DriverManagerDriverDetailsController.getDriverid();

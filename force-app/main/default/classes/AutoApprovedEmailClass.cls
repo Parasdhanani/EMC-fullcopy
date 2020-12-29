@@ -1,34 +1,125 @@
+/**
+ * @Author: GetonCRM Solutions LLP
+ * @Description: Batch to send email notification for pending mileages to selected Account Managers
+ * @Modification logs
+ * ========================================================================================================================
+ * @Date: 27 May 2020 | Sanjay Halpati
+ * @description: Added Email logs & used Utils method to create emails, and optimized code.
+ */
 global class AutoApprovedEmailClass implements Database.Batchable<sObject>, Database.Stateful{
-    global List<OrgWideEmailAddress> owea;
-    global EmailTemplate emailTemplate;
-    global Map<Id, List<Employee_Reimbursement__c>> contactEmReimMap;
-    global String lastMonth;
-
+    global Map<Id, Employee_Reimbursement__c> conIdToReimMap;
+    global Map<Id, list<contact>> manToDriverMap;
+    global List<Contact> conlist;
+    List<OrgWideEmailAddress> owea;
+    EmailTemplate emailTemplate;
+    SendEmailToMe__c  emailConfig = SendEmailToMe__c.getValues('AutoApprovedEmailClass');
+            
     /*
         Constructor
     */ 
     global AutoApprovedEmailClass(){
-        owea = [ SELECT Id, 
-                        address
-                FROM OrgWideEmailAddress
-                WHERE Address = 'driverservices@mburse.com' ];
-        emailTemplate = [SELECT Id,HtmlValue,Name,Subject FROM EmailTemplate WHERE DeveloperName =:'Auto_Approval_Template'];
+        String query = 'SELECT Id, ' +
+                ' Role__c, ' +
+                ' account.Enable_Email_For_Managers__c, ' +
+                ' Deactivated_Date__c, External_Email__c,' +
+                ' Account.Approval_Template_Message__c, '+
+                ' Monthly_Mileage_Limit__c,' +
+                ' Name,' + 
+                '( SELECT Role__c, Id, name, Monthly_Mileage_Limit__c FROM drivers__r ) ' +
+                ' FROM contact ' + 
+                ' WHERE AccountId != null ' +
+                ' AND Account.Enable_Email_For_Managers__c = true' +
+                ' AND Role__c != null ' + 
+                ' AND (Driver_Type__c != \'Driver - Part Time\' OR Driver_Type__c != \'Driver - Full Time\')' +
+                ' AND External_Email__c != null' ;
 
-        String tempDate = date.today().addMonths(-1).Month() + '-' + date.today().addMonths(-1).Year();
-        lastMonth = tempDate.left(2);
-        if(lastMonth.contains('-')) {
-            lastMonth = '0' + tempDate;
-        } else {
-            lastMonth = tempDate;
-        }
+        Datetime currentDate = System.now();
 
-        contactEmReimMap = new  Map<Id, List<Employee_Reimbursement__c>> ();
+        owea = [SELECT  Id, 
+                        Address
+                    FROM OrgWideEmailAddress
+                    WHERE Address = 'driverservices@mburse.com' ];
+        
+        emailTemplate = [SELECT Id, 
+                                HtmlValue, 
+                                Name, 
+                                Subject 
+                            FROM EmailTemplate 
+                                WHERE DeveloperName =: 'Auto_Approval_Template'];
 
-        for(Employee_Reimbursement__c reimb : [SELECT Id, Name, Month__c, Contact_Id__r.Account.Approval_Template_Message__c,  Total_Mileage__c, Status__c,Contact_Id__r.Role__c, Contact_Id__r.Manager__c, Contact_Id__r.Name, Contact_Id__r.Monthly_Mileage_Limit__c FROM Employee_Reimbursement__c WHERE Month__c =: lastMonth]){
-            if(contactEmReimMap.containsKey(reimb.Contact_Id__c)){
-                contactEmReimMap.get(reimb.Contact_Id__c).add(reimb);
+
+        String lastMonth = Utils.fetchMonths(1, 0)[0]; // Fetch Last month in format MM-YYYY
+        
+        List<String> accountNames = new List<String>();
+
+        if(Utils.CheckNulls(System.Label.TripstobeLogged)) {   
+            accountNames = Utils.SplitStringToList( System.Label.TripstobeLogged, ',');  
+        }   
+        
+        conIdToReimMap = new  Map<Id, Employee_Reimbursement__c> ();
+        manToDriverMap = new Map<Id, list<Contact>> ();
+        conlist = new List<Contact>();
+
+        if(!accountNames.isEmpty()){
+            
+            List<Id> userContactIds = new  List<Id>();
+            for(User u: [SELECT ContactId 
+                                FROM user 
+                                    WHERE IsActive = : true 
+                                    AND ContactId != null 
+                                    AND contact.accountid != null 
+                                    AND contact.account.Enable_Email_For_Managers__c = true 
+                                    AND contact.account.Name =: accountNames])  {
+                userContactIds.add(u.ContactId);
+            }
+            query += ' AND Id In: userContactIds';
+
+            if(!Test.isRunningTest()) {
+                query += ' AND account.Name In: accountNames' +
+                         ' AND (Deactivated_Date__c = NULL OR Deactivated_Date__c <=: currentDate)';
             } else {
-                contactEmReimMap.put(reimb.Contact_Id__c, new List<Employee_Reimbursement__c>{reimb});
+                query += ' LIMIT 1';
+            }
+
+            conlist = Database.query(query);
+            if(!conlist.isEmpty()){
+                List<Id> driverIds = new  List<Id>();
+                for(Contact c : conlist){
+                    for(contact dr : c.Drivers__r) {
+                        driverIds.add(dr.id);
+                    }
+                }
+
+                for(Contact c : [SELECT Name,
+                                        Manager__c, 
+                                        (SELECT Id,  
+                                                month__c, 
+                                                status__c,
+                                                Total_Mileage__c 
+                                            FROM Employee_Reimbursements__r 
+                                                WHERE month__c = : lastmonth ),  
+                                        Monthly_Mileage_Limit__c
+                                    FROM Contact 
+                                        WHERE Manager__c in: driverIds]) {
+
+                    if(manToDriverMap.Containskey(c.Manager__c)) {
+                        manToDriverMap.get(c.Manager__c).add(c);
+                    } else {
+                        manToDriverMap.put(c.Manager__c, new List<Contact> { c });
+                    }
+                }         
+                
+                for(Employee_Reimbursement__c ri : [SELECT Id, 
+                                                            Name, 
+                                                            Month__c, 
+                                                            status__c, 
+                                                            Total_Mileage__c, 
+                                                            Contact_id__c 
+                                                        FROM Employee_Reimbursement__c 
+                                                            WHERE Contact_id__c in: driverIds 
+                                                            AND Month__c = : lastmonth]){
+                    conIdToReimMap.put(ri.Contact_id__c, ri);
+                }
             }
         }
     }
@@ -36,146 +127,90 @@ global class AutoApprovedEmailClass implements Database.Batchable<sObject>, Data
     /*
         Start Method
     */ 
-    global Database.QueryLocator start(Database.BatchableContext BC){
-        Set<Id> keys = contactEmReimMap.keyset();
-        return Database.getQueryLocator('SELECT Id, Name, Account.Approval_Template_Message__c, role__c, Monthly_Mileage_Limit__c FROM Contact WHERE Id In: keys');
+    global list<contact> start(Database.BatchableContext BC){ 
+        return conlist;
     }
     
     /*
         Execute Method
     */ 
-    global void execute(Database.BatchableContext BC, list<contact> conlist){
+    global void execute(Database.BatchableContext BC, list<contact> conlist) {
+
         List<Messaging.SingleEmailMessage> mails = new List<Messaging.SingleEmailMessage>();
-        
-        string month = string.valueOf(Date.today().addMonths(-1).month());
-        string m = (month == '1') ? 'January' : (month == '2') ? 'February' : (month == '3') ? 'March' : (month == '4') ? 'April' : (month == '5') ? 'May' : (month == '6') ? 'June' : (month == '7') ? 'July' : (month == '8') ? 'August' : (month == '9') ? 'September' : (month == '01') ? 'January' : (month == '02') ? 'February' : (month == '03') ? 'March' : (month == '04') ? 'April' : (month == '05') ? 'May' : (month == '06') ? 'June' : (month == '07') ? 'July' : (month == '08') ? 'August' : (month == '09') ? 'September' : (month == '10') ? 'October' : (month == '11') ? 'November' : (month == '12') ? 'December' : 'Invalid Month';
+        List<Email_Log__c> emailLogs = new List<Email_Log__c>();
 
-        for(Contact conObj : conlist) {
-            string[] toAddresses = new string[]{'hiren.sharma@getoncrm.com'};
-            messaging.singleEmailMessage mail = new  messaging.singleEmailMessage();
+        String month = datetime.now().addMonths(-1).format('MMMM');
+        String reportTo = '<th style="border:2px solid black;" width="5%">Report To</th>';
+        Boolean isAdmin;
+        for(Contact con: conlist) {
             String html = '';
+            isAdmin = (con.role__c == 'Admin' || con.role__c == 'Driver/Admin');
             String newBody = emailTemplate.HtmlValue;
-            
-            for(Employee_Reimbursement__c empReimObj : contactEmReimMap.get(conObj.Id)) {
-            
-                if(!String.isBlank(conObj.Account.Approval_Template_Message__c)) {
-                    String accountMessage = conObj.Account.Approval_Template_Message__c;
-                    accountMessage = accountMessage.replace('{month}', m);
-                    newBody = newBody.replace('{account.Approval_Template_Message__c}',accountMessage);
-                } else {
-                    newBody = newBody.replace('{account.Approval_Template_Message__c}','');
-                }
+            if(!String.isBlank(con.Account.Approval_Template_Message__c)) {
+                String accountMessage = con.Account.Approval_Template_Message__c.replace('{month}', month);
+                newBody = newBody.replace('{account.Approval_Template_Message__c}', accountMessage);
+            }else {
+                newBody = newBody.replace('{account.Approval_Template_Message__c}','');
+            }
 
-                if(conObj.role__c == 'admin' ||  conObj.role__c == 'admin/driver') {
-                    String reportTo = '<th style="border:2px solid black;" width="5%">Report To</th>';
-                    newBody = newBody.replace('{reportToTR}',reportTo);
-                } else {
-                    newBody = newBody.replace('{reportToTR}','');
-                }
+            newBody = newBody.replace('{reportToTR}', isAdmin ? reportTo : '');
 
-                if(contactEmReimMap.containsKey(conObj.Id)){ 
-                    if(empReimObj.Total_Mileage__c  != null) {
-                        html = +'<tr align="center">' + '<td style="border:2px solid black;">' + conObj.Name + '</td>' + '<td style="border:2px solid black;">' + empReimObj.Month__c + '</td>' + '<td style="border:2px solid black;">' + conObj.Monthly_Mileage_Limit__c + '</td>' + '<td style="border:2px solid black;">' + empReimObj.Total_Mileage__c + '</td>' + '<td style="border:2px solid black;">' + empReimObj.status__c + '</td>';
-                        if(conObj.role__c == 'admin' || conObj.role__c == 'admin/driver') {
-                            html += +'<td style="border:2px solid black;" width="5%">' + conObj.Name + '</td>';
-                        }
-                        html += +'</tr>';
-                    }
-                } else {
-                    if(empReimObj.Total_Mileage__c  != null) {
-                        html += +'<tr align="center">' + '<td style="border:2px solid black;">' + conObj.Name + '</td>' + '<td style="border:2px solid black;">' + empReimObj.Month__c + '</td>' + '<td style="border:2px solid black;">' + conObj.Monthly_Mileage_Limit__c + '</td>' + '<td style="border:2px solid black;">' + empReimObj.Total_Mileage__c + '</td>' + '<td style="border:2px solid black;">' + empReimObj.status__c + '</td>';
-                        if(conObj.role__c == 'admin' || conObj.role__c == 'admin/driver') {
-                            html += +'<td style="border:2px solid black;" width="5%">' + conObj.Name + '</td>';
-                        }
-                        html += +'</tr>';
+            for(Contact co: con.drivers__r) {
+                if(conIdToReimMap.Containskey(co.id)) {
+                    
+                    Decimal monthlyLimit = co.Monthly_Mileage_Limit__c != null ? co.Monthly_Mileage_Limit__c : 0;
+                    
+                    if(conIdToReimMap.get(co.id).Total_Mileage__c != Null && conIdToReimMap.get(co.id).Total_Mileage__c > 0) {
+                        html = CreateHtml(co, conIdToReimMap.get(co.id), monthlyLimit, isAdmin, co.Name);
                     }
                 }
-                newBody = newBody.replace('{tableDynamicData}',html);
-            } 
 
-            if(newBody.contains('</td>')){
+                if(manToDriverMap.Containskey(co.id)) {
+                    for(contact c: manToDriverMap.get(co.id)) {
+                        if(!c.Employee_Reimbursements__r.isEmpty()) {
+
+                            Decimal monthlyLimit = c.Monthly_Mileage_Limit__c != null ? c.Monthly_Mileage_Limit__c : 0;
+                            
+                            if(c.Employee_Reimbursements__r[0].Total_Mileage__c != Null && c.Employee_Reimbursements__r[0].Total_Mileage__c > 0){ 
+                                html += CreateHtml(c, c.Employee_Reimbursements__r[0], monthlyLimit, isAdmin, co.Name); 
+                            }
+                        }
+                    }
+                }
+
+                system.debug(html);
+                newBody = newBody.replace('{tableDynamicData}', html);
+            }
+
+            if(!con.drivers__r.isEmpty() && newBody.contains('</td>')) {
+
+                String[] toAddresses = emailConfig.Send_email_to_me__c ? 
+                                        new string[]{'sanket.goswami@getoncrm.com'} :
+                                        new string[]{con.External_Email__c};
+                
+                String[] bccAddresses = emailConfig.SetBccAddress__c ? 
+                                        new string[]{'minkesh.patel@getoncrm.com'} :
+                                        null;
+                
+                messaging.singleEmailMessage mail = Utils.CreateEmail(emailTemplate.Subject, newBody, toAddresses, null, bccAddresses, null);
+                emailLogs.add(
+                    Utils.CreateEmailLog(emailTemplate.Subject, newBody, toAddresses, null, bccAddresses, null, 'AutoApprovedEmailClass')
+                );
+
+                if(!owea.isEmpty())  {
+                    mail.setOrgWideEmailAddressId(owea.get(0).Id);
+                }
+                
                 mails.add(mail);    
+                
             }
-
-            if(!owea.isEmpty()) {
-                mail.setOrgWideEmailAddressId(owea.get(0).Id);
-            }
-        
-            mail.setToAddresses(toAddresses);
-            mail.setSubject(emailTemplate.Subject);
-            // mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','natavar.goc@gmail.com'});
-            mail.setHtmlBody(newBody);
         }
 
-        if(!mails.isEmpty()) {
-            Messaging.sendEmail(mails);
-        }   
-        
-
-        // Map<Id, List<Employee_Reimbursement__c>> contactEmReimMap = new  Map<Id, List<Employee_Reimbursement__c>> ();
-        // for(Employee_Reimbursement__c empReimObj : scope){
-        //     string[] toAddresses = new string[]{'hiren.sharma@getoncrm.com'};
-        //     messaging.singleEmailMessage mail = new  messaging.singleEmailMessage();
-
-        //     String html = '';
-        //     String newBody = emailTemplate.HtmlValue;
-
-        //     if(empReimObj.Contact_Id__c != Null){
-        //         if(contactEmReimMap.containsKey(empReimObj.Contact_Id__c)){
-        //             contactEmReimMap.get(empReimObj.Contact_Id__c).add(empReimObj);
-        //         } else {
-        //             contactEmReimMap.put(empReimObj.Contact_Id__c, new List<Employee_Reimbursement__c>{empReimObj});
-        //         }
-
-        //         if(!String.isBlank(empReimObj.Contact_Id__r.Account.Approval_Template_Message__c)) {
-        //             String accountMessage = empReimObj.Contact_Id__r.Account.Approval_Template_Message__c;
-        //             accountMessage = accountMessage.replace('{month}', m);
-        //             newBody = newBody.replace('{account.Approval_Template_Message__c}',accountMessage);
-        //         }else {
-        //             newBody = newBody.replace('{account.Approval_Template_Message__c}','');
-        //         }
-
-        //         if(empReimObj.Contact_Id__r.role__c == 'admin' || empReimObj.Contact_Id__r.role__c == 'admin/driver') {
-        //             String reportTo = '<th style="border:2px solid black;" width="5%">Report To</th>';
-        //             newBody = newBody.replace('{reportToTR}',reportTo);
-        //         }else {
-        //             newBody = newBody.replace('{reportToTR}','');
-        //         }
-                
-        //         if(empReimObj.Total_Mileage__c  != null) {
-        //             html += +'<tr align="center">' + '<td style="border:2px solid black;">' + empReimObj.Contact_Id__r.Name + '</td>' + '<td style="border:2px solid black;">' + empReimObj.Month__c + '</td>' + '<td style="border:2px solid black;">' + empReimObj.Contact_Id__r.Monthly_Mileage_Limit__c + '</td>' + '<td style="border:2px solid black;">' + empReimObj.Total_Mileage__c + '</td>' + '<td style="border:2px solid black;">' + empReimObj.status__c + '</td>';
-        //             if(empReimObj.Contact_Id__r.role__c == 'admin' || empReimObj.Contact_Id__r.role__c == 'admin/driver') {
-        //                 html += +'<td style="border:2px solid black;" width="5%">' + empReimObj.Contact_Id__r.Name + '</td>';
-        //             }
-        //             html += +'</tr>';
-        //         }
-        //         newBody = newBody.replace('{tableDynamicData}',html);
-        //     }
-            
-            
-        //     if(!owea.isEmpty()) {
-        //         mail.setOrgWideEmailAddressId(owea.get(0).Id);
-        //     }
-            
-        //     mail.setToAddresses(toAddresses);
-        //     mail.setSubject(emailTemplate.Subject);
-        //     // mail.setBCCAddresses(new string[]{'minkesh.patel@getoncrm.com','natavar.goc@gmail.com'});
-        //     mail.setHtmlBody(newBody);
-        //     if(newBody.contains('</td>')){
-        //          //mails.add(mail);    
-        //     }
-        // }
-
-        // for(Contact conObj : [SELECT Id,Name FROM Contact WHERE Id In: contactEmReimMap.Keyset()]){
-        //     system.debug(conObj.Name);
-        //     if(contactEmReimMap.containsKey(conObj.Id)){ 
-        //         system.debug(contactEmReimMap.get(conObj.Id));
-        //     } 
-        // }
-
-        // if(!mails.isEmpty()) {
-        //     Messaging.sendEmail(mails);
-        // }   
+        SendEmail__c  objSendEmail = SendEmail__c.getValues('AutoApprovedEmailClass');
+        if(!mails.isEmpty() && !Test.isRunningTest() && objSendEmail != null && objSendEmail.Send_email_from_code__c) {
+            Messaging.SendEmailResult [] result = Messaging.sendEmail(mails, false);
+            Utils.SaveEmailLogs(emailLogs, result);    
+        }
 
     }
 
@@ -184,5 +219,23 @@ global class AutoApprovedEmailClass implements Database.Batchable<sObject>, Data
     */ 
     global void finish(Database.BatchableContext BC){
 
+    }
+
+    /**
+     * Method to create HTML body String
+     */
+    global String CreateHtml(Contact con, Employee_Reimbursement__c reim, Decimal monthlyLimit, Boolean isAdmin, String cName) {
+        String conStr = '<tr align="center">' + 
+                        '<td style="border:2px solid black;">' + con.Name + '</td>' + 
+                        '<td style="border:2px solid black;">' + reim.Month__c + '</td>' +
+                        '<td style="border:2px solid black;">' + monthlyLimit + '</td>' + 
+                        '<td style="border:2px solid black;">' + reim.Total_Mileage__c + '</td>' + 
+                        '<td style="border:2px solid black;">' + reim.status__c + '</td>';
+        if(isAdmin) {
+            conStr += '<td style="border:2px solid black;" width="5%">' + cName + '</td>';
+        }
+        conStr += '</tr>';
+
+        return conStr;
     }
 }

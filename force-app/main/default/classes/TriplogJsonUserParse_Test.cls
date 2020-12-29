@@ -17,8 +17,9 @@ public class TriplogJsonUserParse_Test {
         '            \"display\": \"Chiu, Doris\",'+
         '            \"firstName\": \"Doris\",'+
         '            \"lastName\": \"Chiu\",'+
-        '            \"phone\": null,'+
-        '            \"employeeId\": null,'+
+        '            \"phone\": \"919-749-6436\",'+  
+		'            \"timeZone\": \"sun.util.calendar.ZoneInfo[id=\\\"US/Pacific\\\",offset=-28800000,dstSavings=3600000,useDaylight=true,transitions=185,lastRule=java.util.SimpleTimeZone[id=US/Pacific,offset=-28800000,dstSavings=3600000,useDaylight=true,startYear=0,startMode=3,startMonth=2,startDay=8,startDayOfWeek=1,startTime=7200000,startTimeMode=0,endMode=3,endMonth=10,endDay=1,endDayOfWeek=1,endTime=7200000,endTimeMode=0]]\",'+
+        '            \"employeeId\":\"80193\",'+
         '            \"dept\": null,'+
         '            \"supervisor\": null,'+
         '            \"admin\": false,'+

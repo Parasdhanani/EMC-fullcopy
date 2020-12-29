@@ -3,7 +3,12 @@ public class SendEmailToUploadonJanuaryTest {
     public static testmethod void test1(){
         
         Test.startTest();
-
+        
+        TriggerConfig__c customEmailSetting =  new TriggerConfig__c();
+        customEmailSetting.Name = 'Defaulttrigger';
+        customEmailSetting.ContactTriggersendEmailForNewContact__c = true;
+        insert customEmailSetting;
+        
         RecordUtilityClass.vehicleUrlMapping();
 
         account acc = new account();

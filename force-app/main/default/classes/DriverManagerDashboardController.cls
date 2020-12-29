@@ -4,6 +4,7 @@ public class DriverManagerDashboardController
     public static String totalvariableamount{get;set;}
     public static String nameofEmployee{get;set;}
     public static boolean showTeamRecord{get;set;}
+    public static boolean insurancePage {get; set;}
     public static String emailofEmployee{get;set;}
     public DriverManagerDashboardController() 
     {
@@ -59,17 +60,21 @@ public class DriverManagerDashboardController
     }
     
     public static void setEmployeeName() {
-        Contact employee= [select Id,Name,showTeamRecord__c,External_Email__c from Contact where id =: getContactid()];
+        Contact employee = [select Id,Name,showTeamRecord__c,External_Email__c,Insurance_Attachment_Id__c from Contact where id =: getContactid()];
         if(employee!=null)
         {
             nameofEmployee= String.escapeSingleQuotes(employee.Name); // Name of the Employee
             emailofEmployee = employee.External_Email__c;
+            if(employee.Insurance_Attachment_Id__c != null){
+                insurancePage = true;
+                System.debug('+++++++++++'+insurancePage);
+            }
         }
         else
         {
             nameofEmployee='';
             emailofEmployee ='';
-            
+            //insurancePage = false;
         }       
     }
     @RemoteAction

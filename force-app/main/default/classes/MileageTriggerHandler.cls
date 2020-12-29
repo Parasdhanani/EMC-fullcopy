@@ -14,13 +14,16 @@ public class MileageTriggerHandler {
 
         for(Employee_Reimbursement__c emp : [Select Id,
                                                     Status__c,
-                                                    Approved_Date__c 
+                                                    Approved_Date__c,
+                                                    Mileage_Lock_Date__c 
                                             from Employee_Reimbursement__c 
                                             where id in :  reimbursementApprovalStatusSet]){
-
-            emp.status__c = 'Pending';
-            emp.Approved_Date__c = null;
-            Reimbursementlist.add(emp);
+            if(emp.Mileage_Lock_Date__c == null){
+                emp.status__c = 'Pending';
+                emp.Approved_Date__c = null;
+                Reimbursementlist.add(emp);
+            }
+            
         }
         update Reimbursementlist;
     }

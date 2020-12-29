@@ -1,0 +1,12 @@
+<apex:page id="Authpage" controller="getGoToWebinarDetail" action="{!getAccessToken}" lightningStylesheets="true">
+    <apex:pageBlock title="Click to Authenticate with G2W ">
+        <apex:form id="formId">            
+            <apex:commandButton value="Authorization"  action="{!getAuthCode}" reRender="formId"/>
+            <apex:commandButton value="Refresh Token"  action="{!refreshAcceToken}" reRender="formId"/>
+            <apex:commandButton value="Get All Webinars"  action="{!getAllwebinars}" reRender="formId"/>
+            <!--<apex:commandButton value="Get All Attendees"  action="{!getAllAttendees}" reRender="formId"/>-->
+            <p></p>
+            Status :<apex:outputText value="{!MsgToDisplay}"/>
+        </apex:form>
+    </apex:pageBlock>
+</apex:page>

@@ -15,6 +15,7 @@ public with sharing class EmployeeMileages
     public String destinationname {get;set;}
     public String mileage {get;set;}
     public String variableamount{get;set;}
+    public String totalMonthlyApproveVariable {get; set;}
     public String variablerate{get;set;}
     public String approveddate{get;set;}
     public String submitteddate {get;set;}
@@ -27,7 +28,13 @@ public with sharing class EmployeeMileages
     public String totalMileages {get;set;}
     public String totalrejected {get;set;}
     public String notes {get;set;}
+    public String tag {get;set;}
     public String id {get;set;}
+    public String lockdate {get;set;}
+    public boolean isLockDate {get;set;}
+    public String staytime {get;set;}
+    public String drivingtime {get;set;}
+    public String totaltime {get;set;}
     public EmployeeMileages() 
     {
         
